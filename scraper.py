@@ -1,11 +1,16 @@
 """Google Play + App Store 리뷰 수집 스크립트
 
-사용법: python scraper.py
+사용법:
+  python scraper.py                     # 전체 앱 수집
+  python scraper.py tving netflix       # 특정 앱만 수집
+  python scraper.py --list              # 등록된 앱 목록 확인
 출력: data/{app_key}_reviews.json, data/{app_key}_info.json
 """
 
+import argparse
 import json
 import os
+import sys
 import time
 from datetime import datetime
 from google_play_scraper import Sort, reviews, app as gp_app_info
@@ -172,11 +177,29 @@ def save_data(app_key: str, app_config: dict, all_reviews: list, info: dict):
 # ── 메인 ──
 
 def main():
+    parser = argparse.ArgumentParser(description="앱 리뷰 수집")
+    parser.add_argument("apps", nargs="*", help="수집할 앱 키 (미지정 시 전체)")
+    parser.add_argument("--list", action="store_true", help="등록된 앱 목록 출력")
+    args = parser.parse_args()
+
+    if args.list:
+        for k, v in APPS.items():
+            print(f"  {k:16s} {v['name']}")
+        return
+
+    target_keys = args.apps if args.apps else list(APPS.keys())
+    invalid = [k for k in target_keys if k not in APPS]
+    if invalid:
+        print(f"[ERROR] 등록되지 않은 앱 키: {', '.join(invalid)}")
+        print("등록된 앱 목록: python scraper.py --list")
+        sys.exit(1)
+
     print("=" * 60)
-    print("Google Play + App Store 리뷰 수집 시작")
+    print(f"Google Play + App Store 리뷰 수집 시작 ({len(target_keys)}개 앱)")
     print("=" * 60)
 
-    for key, config in APPS.items():
+    for key in target_keys:
+        config = APPS[key]
         print(f"\n[{config['name']}]")
 
         # Google Play

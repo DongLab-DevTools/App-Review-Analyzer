@@ -44,6 +44,36 @@ APPS = {
         "app_store_name": "언니의파우치",
         "category": "가계부/금융",
     },
+    "tving": {
+        "name": "티빙",
+        "package_id": "net.cj.cjhv.gs.tving",
+        "category": "OTT",
+    },
+    "netflix": {
+        "name": "넷플릭스",
+        "package_id": "com.netflix.mediaclient",
+        "category": "OTT",
+    },
+    "wavve": {
+        "name": "웨이브",
+        "package_id": "kr.co.captv.pooqV2",
+        "category": "OTT",
+    },
+    "watcha": {
+        "name": "왓챠",
+        "package_id": "com.frograms.wplay",
+        "category": "OTT",
+    },
+    "coupangplay": {
+        "name": "쿠팡플레이",
+        "package_id": "com.coupang.mobile.play",
+        "category": "OTT",
+    },
+    "disneyplus": {
+        "name": "디즈니 플러스",
+        "package_id": "com.disney.disneyplus",
+        "category": "OTT",
+    },
 }
 
 # 담당 앱 키
@@ -72,6 +102,6 @@ ANALYSIS_CATEGORIES = {
     ],
 }
 
-MAX_REVIEWS_GP = 1500
+MAX_REVIEWS_GP = 2000
 MAX_REVIEWS_AS = 500
 GEMINI_BATCH_SIZE = 50
