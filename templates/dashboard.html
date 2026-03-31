@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AppScope — 앱 리뷰 분석 대시보드</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --primary:#0066FF;--primary-strong:#005EEB;--primary-heavy:#0054D1;
+  --label-normal:#171719;--label-neutral:rgba(46,47,51,0.88);--label-alt:rgba(55,56,60,0.61);
+  --label-assistive:rgba(55,56,60,0.28);--label-disable:rgba(55,56,60,0.16);
+  --bg-normal:#FFFFFF;--bg-alt:#F7F7F8;--bg-page:#f8f8f8;
+  --line-normal:rgba(112,115,124,0.16);--line-alt:rgba(112,115,124,0.08);
+  --line-solid:#E1E2E4;--line-solid-neutral:#EAEBEC;
+  --fill-normal:rgba(112,115,124,0.08);--fill-strong:rgba(112,115,124,0.16);--fill-alt:rgba(112,115,124,0.05);
+  --status-positive:#00BF40;--status-cautionary:#FF9200;--status-negative:#FF4242;
+  --inverse-bg:#1B1C1E;--inverse-label:#F7F7F8;
+  --font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --sidebar-w:248px;
+}
+body{font-family:var(--font-family);font-size:14px;font-weight:500;line-height:20px;letter-spacing:0.0145em;color:var(--label-normal);background:var(--bg-page);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* ── Sidebar ── */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--bg-normal);box-shadow:inset -1px 0 0 0 var(--line-alt);z-index:1200;display:flex;flex-direction:column;padding:24px 16px 20px}
+.sidebar-logo{display:flex;align-items:center;gap:10px;padding:0 8px;margin-bottom:32px;cursor:pointer;text-decoration:none}
+.sidebar-logo svg{flex-shrink:0}
+.sidebar-logo span{font-size:18px;font-weight:700;color:var(--label-normal)}
+.sidebar-nav{display:flex;flex-direction:column;gap:2px;flex:1}
+.sidebar-nav a{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--label-alt);text-decoration:none;overflow:hidden;transition:color .15s ease;cursor:pointer}
+.sidebar-nav a::after{content:'';position:absolute;inset:0;border-radius:inherit;background:currentColor;opacity:0;transition:opacity .15s ease;pointer-events:none}
+.sidebar-nav a:hover::after{opacity:0.0375}
+.sidebar-nav a:active::after{opacity:0.09}
+.sidebar-nav a.active{color:var(--label-normal);font-weight:600;background:var(--fill-normal)}
+.sidebar-nav a.active::after{display:none}
+.sidebar-nav a svg{flex-shrink:0;opacity:.6}
+.sidebar-nav a.active svg{opacity:1}
+.sidebar-footer{padding:12px;border-radius:8px;background:var(--fill-alt)}
+.sidebar-footer .label{font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--label-assistive);margin-bottom:4px}
+.sidebar-footer .value{font-size:13px;font-weight:500;color:var(--label-alt)}
+
+/* ── Main ── */
+.main{margin-left:var(--sidebar-w);min-height:100vh;padding:32px 40px 80px}
+.page-section{display:none}
+.page-section.active{display:block}
+.page-title{font-size:22px;font-weight:600;line-height:30px;letter-spacing:-0.0194em}
+.page-desc{font-size:15px;font-weight:500;color:var(--label-alt);margin-top:4px;line-height:22px}
+.section-title{font-size:16px;font-weight:600;line-height:24px;letter-spacing:0.0057em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title .count{font-size:13px;font-weight:500;color:var(--label-assistive)}
+
+/* ── Card ── */
+.card{background:var(--bg-normal);border-radius:8px;box-shadow:inset 0 0 0 1px var(--line-normal);padding:24px}
+.card-sm{padding:20px}
+.card-title{font-size:13px;font-weight:500;line-height:18px;letter-spacing:0.0194em;color:var(--label-alt);margin-bottom:8px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-header .card-title{margin-bottom:0}
+
+/* ── KPI ── */
+.kpi-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.kpi-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi-value{font-size:28px;font-weight:700;line-height:36px;letter-spacing:-0.02em}
+.kpi-sub{font-size:13px;font-weight:500;color:var(--label-alt);margin-top:2px}
+
+/* ── App Summary Grid ── */
+.app-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.app-card{position:relative;overflow:hidden;cursor:pointer;transition:transform .1s ease}
+.app-card:active{transform:scale(0.98)}
+.app-card::after{content:'';position:absolute;inset:0;border-radius:inherit;background:#171719;opacity:0;transition:opacity .15s ease;pointer-events:none}
+.app-card:hover::after{opacity:0.0375}
+.app-card .app-name{font-size:15px;font-weight:600;line-height:22px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.app-card .app-icon{width:32px;height:32px;border-radius:8px;flex-shrink:0;object-fit:cover}
+.app-card .app-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.app-card .stat-label{font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--label-assistive)}
+.app-card .stat-value{font-size:16px;font-weight:700;margin-top:2px}
+.positive-ratio{display:inline-flex;align-items:center;gap:4px}
+.ratio-dot{width:8px;height:8px;border-radius:9999px}
+.ratio-dot.green{background:var(--status-positive)}
+.ratio-dot.orange{background:var(--status-cautionary)}
+.ratio-dot.red{background:var(--status-negative)}
+
+/* ── Table ── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+table thead th{font-size:13px;font-weight:500;color:var(--label-alt);text-align:left;padding:10px 12px;letter-spacing:0.0194em;line-height:18px;white-space:nowrap;box-shadow:inset 0 -1px 0 0 var(--line-alt)}
+table tbody tr{position:relative;overflow:hidden}
+table tbody tr::after{content:'';position:absolute;inset:0;background:#171719;opacity:0;transition:opacity .15s ease;pointer-events:none}
+table tbody tr:hover::after{opacity:0.0375}
+table tbody td{padding:12px;font-size:14px;font-weight:500;line-height:20px;box-shadow:inset 0 -1px 0 0 var(--line-alt);vertical-align:top}
+table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
+.review-cell{max-width:340px;cursor:pointer}
+.review-cell .rv-text{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.review-cell.expanded .rv-text{display:block;-webkit-line-clamp:unset;overflow:visible}
+.review-cell .expand-hint{display:block;font-size:12px;font-weight:500;color:var(--label-assistive);margin-top:4px}
+.review-cell.expanded .expand-hint{display:none}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:4px;font-size:12px;font-weight:600;white-space:nowrap}
+.badge.pos{background:rgba(0,191,64,0.08);color:var(--status-positive)}
+.badge.neg{background:rgba(255,66,66,0.08);color:var(--status-negative)}
+.badge.neu{background:var(--fill-normal);color:var(--label-alt)}
+.badge.store-play{background:rgba(52,168,83,0.08);color:#34A853}
+.badge.store-apple{background:rgba(0,122,255,0.08);color:#007AFF}
+
+/* ── Chip ── */
+.chip{display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:9999px;font-size:13px;font-weight:500;background:var(--fill-normal);color:var(--label-neutral);gap:4px;position:relative;overflow:hidden;cursor:pointer;transition:transform .1s ease;border:none;font-family:var(--font-family)}
+.chip:active{transform:scale(0.96)}
+.chip::after{content:'';position:absolute;inset:0;border-radius:inherit;background:currentColor;opacity:0;transition:opacity .15s ease;pointer-events:none}
+.chip:hover::after{opacity:0.0375}
+.chip.active{background:var(--primary);color:#fff}
+
+/* ── Buttons ── */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border:none;border-radius:8px;font-family:var(--font-family);font-size:14px;font-weight:500;cursor:pointer;overflow:hidden;transition:transform .1s ease}
+.btn:active{transform:scale(0.97)}
+.btn::after{content:'';position:absolute;inset:0;border-radius:inherit;background:currentColor;opacity:0;transition:opacity .15s ease;pointer-events:none}
+.btn:hover::after{opacity:0.0375}
+.btn:active::after{opacity:0.09}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-outline{background:var(--bg-normal);color:var(--label-normal);box-shadow:inset 0 0 0 1px var(--line-normal)}
+.btn-ghost{background:transparent;color:var(--label-alt)}
+.btn-sm{height:32px;padding:0 12px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+
+/* ── Stars ── */
+.stars{color:#FFB800;font-size:13px;letter-spacing:1px;white-space:nowrap}
+
+/* ── Select ── */
+.select-wrap{position:relative;display:inline-flex}
+.select{appearance:none;height:36px;padding:0 32px 0 12px;border:none;border-radius:10px;box-shadow:inset 0 0 0 1px var(--line-normal);background:var(--bg-normal);font-family:var(--font-family);font-size:14px;font-weight:500;color:var(--label-normal);cursor:pointer}
+.select-wrap::after{content:'';position:absolute;right:12px;top:50%;transform:translateY(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--label-assistive);pointer-events:none}
+
+/* ── Chart Grid ── */
+.chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.chart-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.chart-grid-2x3{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.chart-grid-2 .card canvas,.chart-grid-3 .card canvas,.chart-grid-2x3 .card canvas{max-height:220px}
+
+/* ── Rank List ── */
+.rank-list{display:flex;flex-direction:column;gap:10px}
+.rank-item{display:flex;align-items:center;gap:12px}
+.rank-num{width:22px;height:22px;border-radius:6px;background:var(--fill-normal);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--label-alt);flex-shrink:0}
+.rank-item:nth-child(1) .rank-num{background:var(--primary);color:#fff}
+.rank-item:nth-child(2) .rank-num{background:rgba(0,102,255,0.12);color:var(--primary)}
+.rank-item:nth-child(3) .rank-num{background:rgba(0,102,255,0.06);color:var(--primary)}
+.rank-content{flex:1;display:flex;align-items:center;gap:10px;min-width:0}
+.rank-label{font-size:14px;font-weight:500;min-width:100px;white-space:nowrap}
+.rank-bar-track{flex:1;height:6px;border-radius:3px;background:var(--fill-normal);overflow:hidden}
+.rank-bar-fill{height:100%;border-radius:3px;background:var(--status-negative)}
+.rank-count{font-size:13px;font-weight:500;color:var(--label-alt);min-width:44px;text-align:right}
+
+/* ── Review Card (Notable) ── */
+.review-card{display:flex;flex-direction:column;gap:8px}
+.review-card .review-meta{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--label-alt)}
+.review-card .review-text{font-size:14px;font-weight:500;line-height:22px;color:var(--label-neutral)}
+.review-card .review-app{font-size:12px;font-weight:600;color:var(--label-assistive)}
+.review-divider{height:1px;background:var(--line-alt);margin:4px 0}
+
+/* ── Filter Bar ── */
+.filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filter-bar .filter-label{font-size:13px;font-weight:600;color:var(--label-assistive);margin-right:2px;white-space:nowrap}
+.filter-group{display:flex;align-items:center;gap:6px}
+.filter-sep{width:1px;height:20px;background:var(--line-alt);margin:0 6px}
+.result-count{font-size:13px;font-weight:500;color:var(--label-alt);margin-left:auto}
+.result-count strong{color:var(--primary);font-weight:600}
+
+/* ── Insight Box ── */
+.insight-box{border-radius:8px;background:rgba(0,102,255,0.03);box-shadow:inset 0 0 0 1px rgba(0,102,255,0.12);padding:24px}
+.insight-box .insight-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;margin-bottom:14px;color:var(--primary)}
+.insight-list{display:flex;flex-direction:column;gap:12px}
+.insight-item{display:flex;gap:10px;font-size:14px;line-height:22px}
+.insight-item .bullet{flex-shrink:0;width:6px;height:6px;border-radius:9999px;margin-top:8px}
+.insight-item .bullet.priority{background:var(--status-negative)}
+.insight-item .bullet.action{background:var(--primary)}
+.insight-item .bullet.strength{background:var(--status-positive)}
+.insight-item-content{flex:1}
+.insight-item-content strong{font-weight:600}
+.insight-item-content .sub{color:var(--label-alt);font-size:13px;margin-top:2px}
+
+/* ── Compare Summary ── */
+.compare-summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.summary-card-good{box-shadow:inset 0 0 0 1px rgba(0,191,64,0.2);background:rgba(0,191,64,0.02)}
+.summary-card-bad{box-shadow:inset 0 0 0 1px rgba(255,66,66,0.2);background:rgba(255,66,66,0.02)}
+.summary-card-good .card-title,.summary-card-bad .card-title{font-size:14px;font-weight:600;margin-bottom:12px}
+.summary-card-good .card-title{color:var(--status-positive)}
+.summary-card-bad .card-title{color:var(--status-negative)}
+.summary-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.summary-list li{font-size:14px;line-height:20px;padding-left:16px;position:relative}
+.summary-list li::before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:9999px}
+.summary-card-good .summary-list li::before{background:var(--status-positive)}
+.summary-card-bad .summary-list li::before{background:var(--status-negative)}
+
+/* ── Spacing helpers ── */
+.mb-20{margin-bottom:20px}
+.mb-24{margin-bottom:24px}
+.mb-32{margin-bottom:32px}
+.mt-24{margin-top:24px}
+.flex-between{display:flex;align-items:center;justify-content:space-between}
+
+/* ── Responsive ── */
+@media(max-width:1199px){.app-grid{grid-template-columns:repeat(2,1fr)}.chart-grid-3{grid-template-columns:1fr 1fr}}
+@media(max-width:991px){.kpi-grid-3,.kpi-grid-4{grid-template-columns:repeat(2,1fr)}.chart-grid-2,.chart-grid-2x3{grid-template-columns:1fr}.compare-summary{grid-template-columns:1fr}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.modal{background:var(--bg-normal);border-radius:16px;box-shadow:0 24px 38px -10px rgba(23,23,25,0.12);width:520px;max-width:calc(100vw - 40px);max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0}
+.modal-title{font-size:16px;font-weight:600}
+.modal-body{padding:16px 24px 20px;flex:1;overflow:hidden;display:flex;flex-direction:column;gap:12px}
+.modal-progress{height:4px;border-radius:9999px;background:var(--fill-normal);overflow:hidden}
+.modal-progress-bar{height:100%;border-radius:9999px;background:var(--primary);width:0%;transition:width 0.3s ease}
+.modal-status{font-size:13px;font-weight:600;color:var(--label-normal)}
+.modal-log{flex:1;min-height:200px;max-height:360px;overflow-y:auto;background:var(--bg-alt);color:var(--label-neutral);border-radius:8px;padding:12px 16px;box-shadow:inset 0 0 0 1px var(--line-alt);font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:18px;white-space:pre-wrap;word-break:break-all}
+.modal-log .log-line{opacity:0.6}
+.modal-log .log-line.highlight{opacity:1;color:var(--status-positive);font-weight:500}
+.modal-log .log-line.error{opacity:1;color:var(--status-negative)}
+.modal-log .log-line.done{opacity:1;color:var(--status-positive);font-weight:600}
+.modal-footer{padding:12px 24px 20px;display:flex;justify-content:flex-end}
+@media(max-width:767px){.sidebar{display:none}.main{margin-left:0;padding:20px 16px}.app-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo" onclick="goHome()">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="8" fill="#0066FF"/>
+      <path d="M8 19V13.5L14 9l6 4.5V19h-4.5v-3.5h-3V19H8z" fill="#fff" opacity=".95"/>
+      <circle cx="14" cy="11.5" r="1.5" fill="#fff" opacity=".6"/>
+    </svg>
+    <span>AppScope</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="active" data-page="p1">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="10.5" y="2" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="10.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="10.5" y="10.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
+      통합 대시보드
+    </a>
+    <a data-page="p2">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 13V7M7.5 13V5M12 13V9M16.5 13V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      앱 비교
+    </a>
+    <a data-page="p3">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M9 5.5v4l2.5 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      개별 앱 분석
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="label">마지막 수집</div>
+    <div class="value">{{ data.collected_at }}</div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<div class="main">
+
+<!-- ═══════ P1. 통합 대시보드 ═══════ -->
+<section class="page-section active" id="p1">
+  <div class="flex-between mb-24">
+    <div>
+      <h1 class="page-title">통합 대시보드</h1>
+      <p class="page-desc">한눈에 전체 앱 현황을 파악합니다</p>
+    </div>
+    <button class="btn btn-outline btn-sm" id="refresh-btn" onclick="refreshData()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 10v3h3M14 6V3h-3M2 6.5A5.5 5.5 0 0 1 12.8 4M14 9.5A5.5 5.5 0 0 1 3.2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      리뷰 최신화
+    </button>
+  </div>
+
+  <div class="kpi-grid-3">
+    <div class="card card-sm">
+      <div class="card-title">총 수집 리뷰</div>
+      <div class="kpi-value">{{ "{:,}".format(data.global.total) }}건</div>
+      <div class="kpi-sub">{{ data.global.app_count }}개 앱 · Google Play + App Store</div>
+    </div>
+    <div class="card card-sm">
+      <div class="card-title">전체 평균 별점</div>
+      <div class="kpi-value">{{ data.global.avg_score }}</div>
+    </div>
+    <div class="card card-sm">
+      <div class="card-title">전체 긍정 비율</div>
+      <div class="kpi-value" style="color:{% if data.global.pos_pct >= 60 %}var(--status-positive){% elif data.global.pos_pct < 40 %}var(--status-negative){% else %}var(--status-cautionary){% endif %}">{{ data.global.pos_pct }}%</div>
+    </div>
+  </div>
+
+  <div class="section-title">앱별 요약 <span class="count">{{ data.apps|length }}개 앱</span></div>
+  <div class="app-grid">
+    {% set colors = ['#6C63FF,#B8A9FF','#FF6B6B,#FFB4B4','#4ECDC4,#A8E6CF','#45B7D1,#96E6FF','#F093FB,#F5576C','#667EEA,#764BA2','#FF9A9E,#FECFEF','#A18CD1,#FBC2EB'] %}
+    {% for app in data.apps %}
+    <div class="card card-sm app-card" onclick="goToApp('{{ app.key }}')">
+      <div class="app-name">
+        {% if app.icon %}<img class="app-icon" src="{{ app.icon }}" alt="{{ app.name }}">{% else %}<div class="app-icon" style="background:var(--fill-normal)"></div>{% endif %}
+        {{ app.name }}{% if app.is_primary %} <span class="badge pos" style="font-size:11px;height:18px;margin-left:4px">담당</span>{% endif %}
+      </div>
+      <div class="app-stats">
+        <div><div class="stat-label">리뷰</div><div class="stat-value">{{ "{:,}".format(app.total) }}</div></div>
+        <div><div class="stat-label">별점</div><div class="stat-value">{{ app.avg_score }}</div></div>
+        <div><div class="stat-label">긍정</div><div class="stat-value positive-ratio"><span class="ratio-dot {% if app.pos_pct >= 60 %}green{% elif app.pos_pct >= 40 %}orange{% else %}red{% endif %}"></span>{{ app.pos_pct }}%</div></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="chart-grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="section-title" style="margin-bottom:0">전체 주요 불만 TOP 5</div>
+        <span style="font-size:12px;color:var(--label-assistive)">별점 1~2점 기준</span>
+      </div>
+      <div class="rank-list">
+        {% if data.complaints_top5 %}
+          {% set max_cnt = data.complaints_top5[0].count %}
+          {% for c in data.complaints_top5 %}
+          <div class="rank-item">
+            <span class="rank-num">{{ loop.index }}</span>
+            <div class="rank-content">
+              <span class="rank-label">{{ c.name }}</span>
+              <div class="rank-bar-track"><div class="rank-bar-fill" style="width:{{ (c.count / max_cnt * 100)|round }}%"></div></div>
+              <span class="rank-count">{{ c.count }}건</span>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="color:var(--label-assistive);font-size:13px;text-align:center;padding:20px">데이터 없음</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title" style="margin-bottom:14px">최근 주목할 리뷰</div>
+      {% for r in data.notable[:4] %}
+      <div class="review-card">
+        <div class="review-meta">
+          <span class="stars">{{ "★" * r.score }}{{ "☆" * (5 - r.score) }}</span>
+          <span class="badge {% if r.score >= 4 %}pos{% else %}neg{% endif %}">{% if r.score >= 4 %}긍정{% else %}부정{% endif %}</span>
+          {% if r.thumbsUpCount %}<span style="margin-left:auto;display:inline-flex;align-items:center;gap:3px"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M5 14H3a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h2m0 7V7m0 7h6.3a2 2 0 0 0 2-1.7l.7-4.3a1 1 0 0 0-1-1.2H10V3.5A1.5 1.5 0 0 0 8.5 2L5 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ r.thumbsUpCount }}</span>{% endif %}
+        </div>
+        <div class="review-text">{{ r.content[:150] }}{% if r.content|length > 150 %}...{% endif %}</div>
+        <div class="review-app">{{ r._app_name }} · {{ r.at[:10] if r.at else "" }}</div>
+      </div>
+      {% if not loop.last %}<div class="review-divider"></div>{% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ P2. 앱 비교 ═══════ -->
+<section class="page-section" id="p2">
+  <div class="flex-between mb-24">
+    <div>
+      <h1 class="page-title">앱 비교</h1>
+      <p class="page-desc">경쟁 앱 대비 위치를 파악합니다</p>
+    </div>
+  </div>
+
+  <div class="card mb-20" style="padding:0">
+    <div style="padding:20px 24px 0">
+      <div class="section-title" style="margin-bottom:12px">비교 테이블</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="padding-left:24px">앱 이름</th>
+            <th>리뷰 수</th>
+            <th>평균 별점</th>
+            <th>긍정 비율</th>
+            <th>부정 비율</th>
+            <th style="padding-right:24px">주요 불만 TOP 3</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for app in data.apps %}
+          <tr{% if app.is_primary %} class="highlight"{% endif %}>
+            <td style="padding-left:24px">{% if app.is_primary %}<strong style="color:var(--primary)">{{ app.name }}</strong>{% else %}{{ app.name }}{% endif %}</td>
+            <td>{{ "{:,}".format(app.total) }}</td>
+            <td><span class="stars">{{ "★" * (app.avg_score|round|int) }}{{ "☆" * (5 - app.avg_score|round|int) }}</span> {{ app.avg_score }}</td>
+            <td><span class="badge pos">{{ app.pos_pct }}%</span></td>
+            <td><span class="badge neg">{{ app.neg_pct }}%</span></td>
+            <td style="padding-right:24px"><span style="font-size:13px;color:var(--label-alt)">{{ app.top_neg_cats | join(", ") if app.top_neg_cats else "-" }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="chart-grid-3 mb-20">
+    <div class="card"><div class="card-title">평균 별점 비교</div><canvas id="chart-cmp-score" height="220"></canvas></div>
+    <div class="card"><div class="card-title">긍정 비율 비교</div><canvas id="chart-cmp-pos" height="220"></canvas></div>
+    <div class="card"><div class="card-title">카테고리별 비교</div><canvas id="chart-cmp-cat" height="220"></canvas></div>
+  </div>
+
+  <div class="section-title">비교 요약</div>
+  <div class="compare-summary" id="cmp-summary"></div>
+</section>
+
+<!-- ═══════ P3. 개별 앱 분석 ═══════ -->
+<section class="page-section" id="p3">
+  <div class="flex-between mb-24">
+    <div style="display:flex;align-items:center;gap:16px">
+      <h1 class="page-title" id="p3-title">개별 앱 분석</h1>
+      <div class="select-wrap">
+        <select class="select" id="p3-app-select" onchange="loadAppData()">
+          {% for app in data.apps %}
+          <option value="{{ app.key }}" {% if app.is_primary %}selected{% endif %}>{{ app.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <span style="font-size:13px;color:var(--label-assistive)">마지막 수집: {{ data.collected_at }}</span>
+  </div>
+
+  <div class="kpi-grid-4" id="p3-kpis"></div>
+
+  <div class="chart-grid-2x3" id="p3-charts">
+    <div class="card"><div class="card-title">별점 분포</div><canvas id="chart-star-dist" height="200"></canvas></div>
+    <div class="card"><div class="card-title">감성 비율</div><canvas id="chart-sentiment-pie" height="200"></canvas></div>
+    <div class="card"><div class="card-title">버전별 별점 추이</div><canvas id="chart-version-trend" height="200"></canvas></div>
+    <div class="card"><div class="card-title">월별 리뷰 추이</div><canvas id="chart-monthly-cnt" height="200"></canvas></div>
+    <div class="card"><div class="card-title">월별 평균 별점 추이</div><canvas id="chart-monthly-rating" height="200"></canvas></div>
+    <div class="card"><div class="card-title">키워드 빈도 TOP</div><canvas id="chart-keyword-freq" height="200"></canvas></div>
+  </div>
+
+  <div class="insight-box mb-20" id="p3-insights"></div>
+
+  <!-- 최근 리뷰 미리보기 -->
+  <div class="card" style="padding:0">
+    <div style="padding:20px 24px 0" class="flex-between">
+      <div class="section-title" style="margin-bottom:0">최근 리뷰</div>
+      <button class="btn btn-ghost btn-sm" onclick="goToReviews()" style="color:var(--primary)">전체보기
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5.5 3L9 7l-3.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <div class="table-wrap"><table><thead><tr>
+      <th style="padding-left:24px;width:60px">감성</th><th style="width:50px">스토어</th><th>별점</th><th>리뷰 본문</th><th style="padding-right:24px">작성일</th>
+    </tr></thead><tbody id="p3-preview-tbody"></tbody></table></div>
+  </div>
+</section>
+
+<!-- ═══════ P4. 전체 리뷰 ═══════ -->
+<section class="page-section" id="p4">
+  <div class="flex-between mb-24">
+    <div style="display:flex;align-items:center;gap:16px">
+      <button class="btn btn-ghost btn-sm" onclick="goBackToP3()" style="color:var(--label-alt)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L5 7l3.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        앱 분석으로
+      </button>
+      <h1 class="page-title" id="p4-title">전체 리뷰</h1>
+    </div>
+    <span style="font-size:13px;color:var(--label-assistive)" id="p4-total-count"></span>
+  </div>
+
+  <div class="card mb-20" style="padding:16px 20px" id="p4-filter-bar"></div>
+
+  <div class="card" style="padding:0" id="p4-review-table">
+    <div class="table-wrap"><table><thead><tr>
+      <th style="padding-left:24px;width:60px">감성</th><th style="width:80px">카테고리</th><th style="width:50px">스토어</th><th>작성자</th><th>버전</th><th>별점</th><th>리뷰 본문</th><th style="padding-right:24px">작성일</th>
+    </tr></thead><tbody id="p4-review-tbody"></tbody></table></div>
+    <div style="padding:16px 24px;display:flex;justify-content:center;gap:8px" id="p4-pagination"></div>
+  </div>
+</section>
+
+</div>
+
+<!-- Refresh Modal -->
+<div class="modal-overlay" id="refresh-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">리뷰 수집</span>
+      <button class="btn btn-ghost btn-sm" id="modal-close-btn" onclick="closeRefreshModal()" style="display:none;width:32px;padding:0">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-progress" id="modal-progress">
+        <div class="modal-progress-bar" id="modal-progress-bar"></div>
+      </div>
+      <div class="modal-status" id="modal-status">준비 중...</div>
+      <div class="modal-log" id="modal-log"></div>
+    </div>
+    <div class="modal-footer" id="modal-footer">
+      <button class="btn btn-outline btn-sm" id="modal-cancel-btn" onclick="cancelRefresh()">취소</button>
+      <button class="btn btn-primary btn-sm" id="modal-reload-btn" style="display:none;margin-left:8px" onclick="window.location.reload()">새로고침</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const APPS_DATA = {{ data.apps | tojson }};
+const PRIMARY_APP = "{{ data.primary_app }}";
+
+// ── Nav ──
+document.querySelectorAll('.sidebar-nav a').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+    document.getElementById(link.dataset.page).classList.add('active');
+    window.scrollTo(0, 0);
+    if (link.dataset.page === 'p2') initP2Charts();
+    if (link.dataset.page === 'p3') loadAppData();
+  });
+});
+
+// ── Chart.js defaults ──
+Chart.defaults.font.family = "'Pretendard Variable', sans-serif";
+Chart.defaults.font.weight = '500';
+Chart.defaults.color = 'rgba(55,56,60,0.28)';
+const noGrid = { grid: { display: false }, border: { display: false } };
+const lightGrid = { grid: { color: 'rgba(112,115,124,0.08)', drawBorder: false }, border: { display: false } };
+
+// ── P2 Charts ──
+let p2Init = false;
+function initP2Charts() {
+  if (p2Init) return; p2Init = true;
+  const names = APPS_DATA.map(a => a.name);
+
+  new Chart(document.getElementById('chart-cmp-score'), {
+    type:'bar',
+    data:{ labels:names, datasets:[{ data:APPS_DATA.map(a=>a.avg_score), backgroundColor:APPS_DATA.map(a=>a.key===PRIMARY_APP?'#7EB3FF':'rgba(180,183,190,0.25)'), borderRadius:6, barPercentage:0.6 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:noGrid, y:{...lightGrid,min:0,max:5,ticks:{stepSize:1}}} }
+  });
+
+  new Chart(document.getElementById('chart-cmp-pos'), {
+    type:'bar',
+    data:{ labels:names, datasets:[{ data:APPS_DATA.map(a=>a.pos_pct), backgroundColor:APPS_DATA.map(a=>a.key===PRIMARY_APP?'#7EDBA6':'rgba(180,183,190,0.25)'), borderRadius:6, barPercentage:0.6 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:noGrid, y:{...lightGrid,min:0,max:100,ticks:{stepSize:25,callback:v=>v+'%'}}} }
+  });
+
+  // Category compare placeholder
+  const allCats = [...new Set(APPS_DATA.flatMap(a=>a.top_neg_cats||[]))].slice(0,5);
+  if (allCats.length) {
+    const primary = APPS_DATA.find(a=>a.key===PRIMARY_APP);
+    const others = APPS_DATA.filter(a=>a.key!==PRIMARY_APP);
+    new Chart(document.getElementById('chart-cmp-cat'), {
+      type:'bar',
+      data:{ labels:allCats, datasets:[
+        { label:primary?primary.name:'담당', data:allCats.map(c=>(primary?.top_neg_cats||[]).includes(c)?1:0), backgroundColor:'#7EB3FF', borderRadius:4, barPercentage:0.7 },
+        { label:'경쟁앱', data:allCats.map(c=>others.filter(a=>(a.top_neg_cats||[]).includes(c)).length), backgroundColor:'rgba(180,183,190,0.3)', borderRadius:4, barPercentage:0.7 },
+      ] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{usePointStyle:true,pointStyle:'circle',padding:16,font:{size:11}}}}, scales:{x:noGrid, y:{...lightGrid}} }
+    });
+  }
+
+  // Summary
+  const primary = APPS_DATA.find(a=>a.key===PRIMARY_APP);
+  if (!primary) return;
+  const avgScore = APPS_DATA.reduce((s,a)=>s+a.avg_score,0)/APPS_DATA.length;
+  const avgPos = APPS_DATA.reduce((s,a)=>s+a.pos_pct,0)/APPS_DATA.length;
+  let strengths=[], weaknesses=[];
+  if(primary.avg_score>=avgScore) strengths.push(`평균 별점 ${primary.avg_score}점 (전체 평균 ${avgScore.toFixed(1)}점 대비 우수)`);
+  else weaknesses.push(`평균 별점 ${primary.avg_score}점 (전체 평균 ${avgScore.toFixed(1)}점 대비 열위)`);
+  if(primary.pos_pct>=avgPos) strengths.push(`긍정 비율 ${primary.pos_pct}% (전체 평균 ${avgPos.toFixed(0)}% 대비 우수)`);
+  else weaknesses.push(`긍정 비율 ${primary.pos_pct}% (전체 평균 ${avgPos.toFixed(0)}% 대비 열위)`);
+  document.getElementById('cmp-summary').innerHTML = `
+    <div class="card card-sm summary-card-good"><div class="card-title">${primary.name} 강점 (vs 경쟁 앱)</div>
+      <ul class="summary-list">${strengths.length?strengths.map(s=>`<li>${s}</li>`).join(''):'<li style="color:var(--label-alt)">뚜렷한 강점 없음</li>'}</ul></div>
+    <div class="card card-sm summary-card-bad"><div class="card-title">${primary.name} 약점 (vs 경쟁 앱)</div>
+      <ul class="summary-list">${weaknesses.length?weaknesses.map(w=>`<li>${w}</li>`).join(''):'<li style="color:var(--label-alt)">뚜렷한 약점 없음</li>'}</ul></div>`;
+}
+
+// ── P3 ──
+let currentAppData = null;
+let currentPage = 1;
+const PAGE_SIZE = 20;
+let p3Charts = {};
+
+async function loadAppData() {
+  const key = document.getElementById('p3-app-select').value;
+  document.getElementById('p3-preview-tbody').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--label-alt)">로딩 중...</td></tr>';
+  const res = await fetch(`/api/app/${key}`);
+  currentAppData = await res.json();
+  currentPage = 1;
+  document.getElementById('p3-title').textContent = currentAppData.app_name + ' 분석';
+  renderP3KPIs();
+  renderP3Charts();
+  renderP3Insights();
+  renderP3Preview();
+}
+
+function renderP3KPIs() {
+  const d = currentAppData.results;
+  const total = d.length;
+  const avg = (d.reduce((s,r)=>s+r.score,0)/total).toFixed(1);
+  const lowPct = Math.round(d.filter(r=>r.score<=2).length/total*100);
+  const highPct = Math.round(d.filter(r=>r.score>=4).length/total*100);
+  document.getElementById('p3-kpis').innerHTML = `
+    <div class="card card-sm"><div class="card-title">총 리뷰</div><div class="kpi-value">${total.toLocaleString()}</div></div>
+    <div class="card card-sm"><div class="card-title">평균 별점</div><div class="kpi-value">${avg}</div></div>
+    <div class="card card-sm"><div class="card-title">별점 1~2점 비율</div><div class="kpi-value" style="color:var(--status-negative)">${lowPct}%</div></div>
+    <div class="card card-sm"><div class="card-title">별점 4~5점 비율</div><div class="kpi-value" style="color:var(--status-positive)">${highPct}%</div></div>`;
+}
+
+function renderP3Charts() {
+  Object.values(p3Charts).forEach(c=>c.destroy());
+  p3Charts = {};
+  const d = currentAppData, results = d.results;
+
+  const scoreCounts = [1,2,3,4,5].map(s=>results.filter(r=>r.score===s).length);
+  p3Charts.star = new Chart(document.getElementById('chart-star-dist'), {
+    type:'bar', data:{labels:['1점','2점','3점','4점','5점'],datasets:[{data:scoreCounts,backgroundColor:['#FF9A9A','#FFc98A','#FFE08A','#7EDBA6','#7EDBA6'],borderRadius:6,barPercentage:0.6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:noGrid,y:{...lightGrid,ticks:{callback:v=>v.toLocaleString()}}}}
+  });
+
+  const posCnt=results.filter(r=>r.sentiment==='positive').length, negCnt=results.filter(r=>r.sentiment==='negative').length, neuCnt=results.length-posCnt-negCnt;
+  p3Charts.sent = new Chart(document.getElementById('chart-sentiment-pie'), {
+    type:'doughnut', data:{labels:['긍정','부정','중립'],datasets:[{data:[posCnt,negCnt,neuCnt],backgroundColor:['#7EDBA6','#FF9A9A','rgba(180,183,190,0.25)'],borderWidth:0,spacing:2}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{usePointStyle:true,pointStyle:'circle',padding:16,font:{size:12}}}}}
+  });
+
+  if(d.version_avgs.length) {
+    p3Charts.ver = new Chart(document.getElementById('chart-version-trend'), {
+      type:'line', data:{labels:d.version_avgs.map(v=>v.version),datasets:[{data:d.version_avgs.map(v=>v.avg),borderColor:'#7EB3FF',backgroundColor:'rgba(126,179,255,0.1)',fill:true,tension:0.35,borderWidth:2,pointRadius:3,pointBackgroundColor:'#7EB3FF'}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:noGrid,y:{...lightGrid,min:0,max:5,ticks:{stepSize:1}}}}
+    });
+  }
+
+  if(d.monthly.length) {
+    p3Charts.mc = new Chart(document.getElementById('chart-monthly-cnt'), {
+      type:'bar', data:{labels:d.monthly.map(m=>m.month),datasets:[{data:d.monthly.map(m=>m.count),backgroundColor:'rgba(126,179,255,0.25)',hoverBackgroundColor:'#7EB3FF',borderRadius:6,barPercentage:0.55}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:noGrid,y:{...lightGrid}}}
+    });
+    p3Charts.mr = new Chart(document.getElementById('chart-monthly-rating'), {
+      type:'line', data:{labels:d.monthly.map(m=>m.month),datasets:[{data:d.monthly.map(m=>m.avg),borderColor:'#FFE08A',backgroundColor:'rgba(255,224,138,0.15)',fill:true,tension:0.35,borderWidth:2,pointRadius:3,pointBackgroundColor:'#FFE08A'}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:noGrid,y:{...lightGrid,min:0,max:5,ticks:{stepSize:1}}}}
+    });
+  }
+
+  if(d.keywords.length) {
+    const kws = d.keywords.slice(0,10);
+    p3Charts.kw = new Chart(document.getElementById('chart-keyword-freq'), {
+      type:'bar', data:{labels:kws.map(k=>k.word),datasets:[{data:kws.map(k=>k.count),backgroundColor:kws.map(k=>k.count>kws[2].count?'#7EB3FF':'rgba(180,183,190,0.25)'),borderRadius:4,barPercentage:0.6}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{...noGrid,ticks:{font:{size:12}}},x:{...lightGrid}}}
+    });
+  }
+}
+
+function renderP3Insights() {
+  const ins = currentAppData.insights;
+  let html = `<div class="insight-title"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1.5l2.1 4.3 4.7.7-3.4 3.3.8 4.7L9 12.3 4.8 14.5l.8-4.7L2.2 6.5l4.7-.7L9 1.5z" fill="currentColor"/></svg>AI 인사이트 · 기획 제안</div><div class="insight-list">`;
+  if(ins.priority.length) {
+    ins.priority.forEach((p,i)=>{ html+=`<div class="insight-item"><div class="bullet priority"></div><div class="insight-item-content"><strong>개선 우선순위 ${i+1}: ${p.name}</strong><div class="sub">${p.count}건${p.pct?' (부정 리뷰의 '+p.pct+'%)':''}</div></div></div>`; });
+  }
+  if(ins.priority.length) html+=`<div class="insight-item"><div class="bullet action"></div><div class="insight-item-content"><strong>기획 액션: '${ins.priority[0].name}' 관련 UX/기능 개선 검토</strong></div></div>`;
+  if(ins.positive.length) {
+    ins.positive.forEach(p=>{ html+=`<div class="insight-item"><div class="bullet strength"></div><div class="insight-item-content"><strong>강점 강화: ${p.name}</strong><div class="sub">${p.count}건 — 이 영역 강화 시 리텐션 효과 기대</div></div></div>`; });
+  }
+  if(!ins.priority.length&&!ins.positive.length) html+=`<div class="insight-item"><div class="bullet action"></div><div class="insight-item-content"><div class="sub">분석 데이터가 부족합니다. python analyzer.py를 실행하세요.</div></div></div>`;
+  html+='</div>';
+  document.getElementById('p3-insights').innerHTML = html;
+}
+
+// ── P3 Preview (최근 5건) ──
+function renderP3Preview() {
+  const sorted = currentAppData.results.slice().sort((a,b)=>(b.at||'').localeCompare(a.at||''));
+  const items = sorted.slice(0,5);
+  let html='';
+  items.forEach(r=>{
+    const sc=r.score||0;
+    const stars='★'.repeat(sc)+'☆'.repeat(5-sc);
+    const sentCls=r.sentiment==='positive'?'pos':'neg';
+    const sentTxt=r.sentiment==='positive'?'긍정':'부정';
+    const storeCls=r.store==='PLAY'?'store-play':'store-apple';
+    html+=`<tr>
+      <td style="padding-left:24px"><span class="badge ${sentCls}">${sentTxt}</span></td>
+      <td><span class="badge ${storeCls}" style="font-size:11px;height:20px;padding:0 6px">${r.store}</span></td>
+      <td><span class="stars">${stars}</span></td>
+      <td><div class="review-cell" onclick="this.classList.toggle('expanded')"><div class="rv-text">${esc(r.content||'')}</div>${(r.content||'').length>60?'<span class=\"expand-hint\">더보기</span>':''}</div></td>
+      <td style="padding-right:24px;white-space:nowrap;color:var(--label-alt)">${(r.at||'').substring(0,10)}</td>
+    </tr>`;
+  });
+  document.getElementById('p3-preview-tbody').innerHTML = html || '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--label-alt)">리뷰 없음</td></tr>';
+}
+
+// ── P4 Navigation ──
+function goToReviews() {
+  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('p4').classList.add('active');
+  document.querySelectorAll('.sidebar-nav a').forEach(l=>l.classList.remove('active'));
+  window.scrollTo(0,0);
+  document.getElementById('p4-title').textContent = currentAppData.app_name + ' 전체 리뷰';
+  document.getElementById('p4-total-count').textContent = `총 ${currentAppData.results.length.toLocaleString()}건`;
+  currentSentFilter='';
+  currentStoreFilter='';
+  currentPage=1;
+  renderP4Filters();
+  renderP4Reviews();
+}
+
+function goBackToP3() {
+  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('p3').classList.add('active');
+  document.querySelector('.sidebar-nav a[data-page="p3"]').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── P4 Filters ──
+function renderP4Filters() {
+  const results = currentAppData.results;
+  const cats = [...new Set(results.map(r=>r.category).filter(c=>c))].sort();
+  const vers = [...new Set(results.map(r=>r.appVersion).filter(v=>v))].sort().reverse().slice(0,30);
+  const months = [...new Set(results.map(r=>(r.at||'').substring(0,7)).filter(m=>m))].sort();
+  const sm = `style="height:28px;font-size:13px;border-radius:9999px;padding:0 28px 0 10px"`;
+
+  document.getElementById('p4-filter-bar').innerHTML = `
+    <div class="filter-bar" style="margin-bottom:0">
+      <div class="filter-group"><span class="filter-label">감성</span>
+        <button class="chip active" onclick="setFilter(this,'sent','')">전체</button>
+        <button class="chip" onclick="setFilter(this,'sent','positive')">긍정</button>
+        <button class="chip" onclick="setFilter(this,'sent','negative')">부정</button>
+      </div>
+      <div class="filter-sep"></div>
+      <div class="filter-group"><span class="filter-label">스토어</span>
+        <button class="chip active" onclick="setFilter(this,'store','')">전체</button>
+        <button class="chip" onclick="setFilter(this,'store','PLAY')">Play</button>
+        <button class="chip" onclick="setFilter(this,'store','APPLE')">Apple</button>
+      </div>
+      <div class="filter-sep"></div>
+      <div class="filter-group"><span class="filter-label">카테고리</span>
+        <div class="select-wrap"><select class="select" ${sm} id="f-cat" onchange="currentPage=1;renderP4Reviews()"><option value="">전체</option>${cats.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
+      </div>
+      <div class="filter-sep"></div>
+      <div class="filter-group"><span class="filter-label">별점</span>
+        <div class="select-wrap"><select class="select" ${sm} id="f-score" onchange="currentPage=1;renderP4Reviews()"><option value="">전체</option>${[1,2,3,4,5].map(s=>`<option value="${s}">${s}점</option>`).join('')}</select></div>
+      </div>
+      <div class="filter-sep"></div>
+      <div class="filter-group"><span class="filter-label">버전</span>
+        <div class="select-wrap"><select class="select" ${sm} id="f-ver" onchange="currentPage=1;renderP4Reviews()"><option value="">전체</option>${vers.map(v=>`<option value="${v}">${v}</option>`).join('')}</select></div>
+      </div>
+      <div class="filter-sep"></div>
+      <div class="filter-group"><span class="filter-label">기간</span>
+        <div class="select-wrap"><select class="select" ${sm} id="f-ms" onchange="currentPage=1;renderP4Reviews()"><option value="">전체</option>${months.map(m=>`<option value="${m}">${m}</option>`).join('')}</select></div>
+      </div>
+      <span class="result-count" id="p4-result-count"></span>
+      <button class="btn btn-outline btn-sm" style="margin-left:8px" onclick="downloadExcel()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 2v12M12 2v12M1 5h6M9 5h6M1 11h6M9 11h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        엑셀 다운로드
+      </button>
+    </div>`;
+}
+
+let currentSentFilter = '';
+let currentStoreFilter = '';
+function setFilter(el, type, val) {
+  if(type==='sent') { currentSentFilter=val; }
+  if(type==='store') { currentStoreFilter=val; }
+  el.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  currentPage=1; renderP4Reviews();
+}
+
+function getFilteredReviews() {
+  let results = currentAppData.results;
+  const cat=document.getElementById('f-cat')?.value||'';
+  const score=document.getElementById('f-score')?.value||'';
+  const ver=document.getElementById('f-ver')?.value||'';
+  const ms=document.getElementById('f-ms')?.value||'';
+  if(currentSentFilter) results=results.filter(r=>r.sentiment===currentSentFilter);
+  if(currentStoreFilter) results=results.filter(r=>r.store===currentStoreFilter);
+  if(cat) results=results.filter(r=>r.category===cat);
+  if(score) results=results.filter(r=>r.score===parseInt(score));
+  if(ver) results=results.filter(r=>r.appVersion===ver);
+  if(ms) results=results.filter(r=>(r.at||'').substring(0,7)>=ms);
+  return results.sort((a,b)=>(b.at||'').localeCompare(a.at||''));
+}
+
+// ── P4 Reviews ──
+function renderP4Reviews() {
+  const filtered = getFilteredReviews();
+  const totalPages = Math.max(1, Math.ceil(filtered.length/PAGE_SIZE));
+  if(currentPage>totalPages) currentPage=1;
+  document.getElementById('p4-result-count').innerHTML = `검색 결과: <strong>${filtered.length.toLocaleString()}건</strong>`;
+
+  const start=(currentPage-1)*PAGE_SIZE;
+  const items=filtered.slice(start,start+PAGE_SIZE);
+
+  let html='';
+  items.forEach(r=>{
+    const sc=r.score||0;
+    const stars='★'.repeat(sc)+'☆'.repeat(5-sc);
+    const sentCls=r.sentiment==='positive'?'pos':'neg';
+    const sentTxt=r.sentiment==='positive'?'긍정':'부정';
+    const storeCls=r.store==='PLAY'?'store-play':'store-apple';
+    html+=`<tr>
+      <td style="padding-left:24px"><span class="badge ${sentCls}">${sentTxt}</span></td>
+      <td><span style="font-size:12px;color:var(--label-alt)">${esc(r.category||'')}</span></td>
+      <td><span class="badge ${storeCls}" style="font-size:11px;height:20px;padding:0 6px">${r.store}</span></td>
+      <td style="white-space:nowrap">${esc(r.userName||'')}</td>
+      <td style="white-space:nowrap;color:var(--label-alt)">${r.appVersion?'v'+r.appVersion:''}</td>
+      <td><span class="stars">${stars}</span></td>
+      <td><div class="review-cell" onclick="this.classList.toggle('expanded')"><div class="rv-text">${esc(r.content||'')}</div>${(r.content||'').length>60?'<span class=\"expand-hint\">더보기</span>':''}</div></td>
+      <td style="padding-right:24px;white-space:nowrap;color:var(--label-alt)">${(r.at||'').substring(0,10)}</td>
+    </tr>`;
+  });
+  document.getElementById('p4-review-tbody').innerHTML = html || '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--label-alt)">리뷰 없음</td></tr>';
+
+  let pHtml='';
+  if(totalPages>1) {
+    const pg = (n,label,dis) => `<button class="btn btn-outline btn-sm" onclick="currentPage=${n};renderP4Reviews()" ${dis?'disabled':''}>${label}</button>`;
+    const pgNum = (n) => n===currentPage
+      ? `<button class="btn btn-primary btn-sm" style="min-width:32px;padding:0" disabled>${n}</button>`
+      : `<button class="btn btn-outline btn-sm" style="min-width:32px;padding:0" onclick="currentPage=${n};renderP4Reviews()">${n}</button>`;
+
+    pHtml += pg(currentPage-1,'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L5 7l3.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',currentPage<=1);
+
+    let start=Math.max(1,currentPage-2), end=Math.min(totalPages,start+4);
+    if(end-start<4) start=Math.max(1,end-4);
+    if(start>1) { pHtml+=pgNum(1); if(start>2) pHtml+='<span style="font-size:13px;color:var(--label-assistive);padding:0 2px">...</span>'; }
+    for(let i=start;i<=end;i++) pHtml+=pgNum(i);
+    if(end<totalPages) { if(end<totalPages-1) pHtml+='<span style="font-size:13px;color:var(--label-assistive);padding:0 2px">...</span>'; pHtml+=pgNum(totalPages); }
+
+    pHtml += pg(currentPage+1,'<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5.5 3L9 7l-3.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',currentPage>=totalPages);
+  }
+  document.getElementById('p4-pagination').innerHTML = pHtml;
+}
+
+function downloadExcel() {
+  const key=document.getElementById('p3-app-select').value;
+  const p=new URLSearchParams();
+  if(currentSentFilter) p.set('sentiment',currentSentFilter);
+  ['f-cat:category','f-score:score','f-ver:version','f-ms:month_start'].forEach(pair=>{
+    const [id,param]=pair.split(':');
+    const v=document.getElementById(id)?.value||'';
+    if(v) p.set(param,v);
+  });
+  window.location.href=`/api/excel/${key}?${p.toString()}`;
+}
+
+const TOTAL_APPS = {{ data.apps|length }};
+let refreshEvtSource = null;
+
+function refreshData() {
+  const modal = document.getElementById('refresh-modal');
+  const log = document.getElementById('modal-log');
+  const bar = document.getElementById('modal-progress-bar');
+  const status = document.getElementById('modal-status');
+  const footer = document.getElementById('modal-footer');
+  const closeBtn = document.getElementById('modal-close-btn');
+
+  modal.style.display = 'flex';
+  log.innerHTML = '';
+  bar.style.width = '0%';
+  status.textContent = '수집 시작...';
+  document.getElementById('modal-cancel-btn').style.display = '';
+  document.getElementById('modal-reload-btn').style.display = 'none';
+  closeBtn.style.display = 'none';
+
+  let appsDone = 0;
+
+  refreshEvtSource = new EventSource('/api/refresh-stream');
+  refreshEvtSource.onmessage = function(e) {
+    const msg = e.data;
+
+    if (msg === '[DONE]') {
+      refreshEvtSource.close();
+      bar.style.width = '100%';
+      status.textContent = '수집 완료!';
+      addLog(msg, 'done');
+      showDoneState();
+      return;
+    }
+    if (msg.startsWith('[ERROR]')) {
+      refreshEvtSource.close();
+      status.textContent = '오류 발생';
+      addLog(msg, 'error');
+      showDoneState();
+      return;
+    }
+
+    // Track progress by app completion
+    if (msg.includes('->')) {
+      appsDone++;
+      const pct = Math.min(100, Math.round(appsDone / TOTAL_APPS * 100));
+      bar.style.width = pct + '%';
+      addLog(msg, 'highlight');
+    } else if (msg.startsWith('[')) {
+      status.textContent = msg;
+      addLog(msg, 'highlight');
+    } else {
+      addLog(msg, '');
+    }
+  };
+
+  refreshEvtSource.onerror = function() {
+    refreshEvtSource.close();
+    if (bar.style.width !== '100%') {
+      status.textContent = '연결 종료';
+      showDoneState();
+    }
+  };
+}
+
+function addLog(text, cls) {
+  const log = document.getElementById('modal-log');
+  const line = document.createElement('div');
+  line.className = 'log-line' + (cls ? ' '+cls : '');
+  line.textContent = text;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function showDoneState() {
+  document.getElementById('modal-cancel-btn').style.display = 'none';
+  document.getElementById('modal-reload-btn').style.display = '';
+  document.getElementById('modal-close-btn').style.display = 'flex';
+}
+
+function cancelRefresh() {
+  if (refreshEvtSource) { refreshEvtSource.close(); refreshEvtSource = null; }
+  document.getElementById('modal-status').textContent = '취소됨';
+  addLog('사용자에 의해 취소됨', 'error');
+  showDoneState();
+}
+
+function closeRefreshModal() {
+  document.getElementById('refresh-modal').style.display = 'none';
+  if (refreshEvtSource) { refreshEvtSource.close(); refreshEvtSource = null; }
+}
+
+function goHome() {
+  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('p1').classList.add('active');
+  document.querySelectorAll('.sidebar-nav a').forEach(l=>l.classList.remove('active'));
+  document.querySelector('.sidebar-nav a[data-page="p1"]').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goToApp(appKey) {
+  document.getElementById('p3-app-select').value = appKey;
+  document.querySelectorAll('.sidebar-nav a').forEach(l=>l.classList.remove('active'));
+  document.querySelector('.sidebar-nav a[data-page="p3"]').classList.add('active');
+  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('p3').classList.add('active');
+  window.scrollTo(0,0);
+  loadAppData();
+}
+
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+</script>
+</body>
+</html>
