@@ -2,9 +2,21 @@
   "app_key": "netflix",
   "app_name": "넷플릭스",
   "package_id": "com.netflix.mediaclient",
-  "collected_at": "2026-03-31T22:45:20.300531",
+  "collected_at": "2026-04-01T02:03:22.888554",
   "total_reviews": 2000,
   "reviews": [
+    {
+      "reviewId": "99cec52f-151c-49a2-98b4-efcd93da0eec",
+      "userName": "hope",
+      "score": 1,
+      "content": "왜 안켜지죠 .... 데이터 남았는데 계속이러네요",
+      "thumbsUpCount": 0,
+      "at": "2026-03-31T00:33:29",
+      "replyContent": null,
+      "repliedAt": "",
+      "appVersion": "9.59.0 build 8 63972",
+      "store": "PLAY"
+    },
     {
       "reviewId": "a5c9ea38-2fc9-48be-96b0-45658a6c9738",
       "userName": "Young Go",
@@ -5578,7 +5590,7 @@
       "userName": "YH K",
       "score": 1,
       "content": "최근들어 화질이 이상해서 확인해보니 L3로 강등됨. 업데이트 제거 후 재설치하니 L1으로 뜨지만 화질은 SD, 나중에 다시 확인해보면 L3로 강등되어있고, 시스템 ID도 바뀜. DRM Info에서는 L1으로 확인되고, 시스템 ID도 변화 없음. 최신 업데이트가 문제인가 싶어 7번대 설치해봤으나 아예 접속 불가, 8번대 설치하니 작동은 되나, 역시나 재설치 직후에는 L1이지만 화질은 SD, 잠시 후 확인해보면 L3로 강등되어있음. 앱 버전 문제도 아닌듯... 테블릿 외의 다른 기기에서는 정상.",
-      "thumbsUpCount": 99,
+      "thumbsUpCount": 100,
       "at": "2025-11-23T15:52:59",
       "replyContent": null,
       "repliedAt": "",
@@ -23991,18 +24003,6 @@
       "replyContent": null,
       "repliedAt": "",
       "appVersion": null,
-      "store": "PLAY"
-    },
-    {
-      "reviewId": "ee3d43cb-a35d-44bf-bf6c-3ae6854193a8",
-      "userName": "야호",
-      "score": 1,
-      "content": "멀티를 막았네..?",
-      "thumbsUpCount": 0,
-      "at": "2024-08-29T18:30:20",
-      "replyContent": null,
-      "repliedAt": "",
-      "appVersion": "8.129.0 build 5 50801",
       "store": "PLAY"
     }
   ]

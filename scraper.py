@@ -90,7 +90,6 @@ def fetch_as_reviews(app_store_id: int, app_name: str, max_count: int) -> list:
     import requests
 
     all_entries = []
-    # iTunes RSS API는 페이지당 최대 50건, 최대 10페이지
     max_pages = min(10, (max_count + 49) // 50)
 
     for page in range(1, max_pages + 1):
@@ -104,7 +103,6 @@ def fetch_as_reviews(app_store_id: int, app_name: str, max_count: int) -> list:
             entries = data.get("feed", {}).get("entry", [])
             if not entries:
                 break
-            # 첫 번째 entry는 앱 메타데이터일 수 있음 (page 1)
             for entry in entries:
                 if "im:rating" in entry:
                     all_entries.append(entry)

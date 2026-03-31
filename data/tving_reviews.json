@@ -2,9 +2,21 @@
   "app_key": "tving",
   "app_name": "티빙",
   "package_id": "net.cj.cjhv.gs.tving",
-  "collected_at": "2026-03-31T22:45:05.721331",
+  "collected_at": "2026-04-01T02:03:07.216920",
   "total_reviews": 2000,
   "reviews": [
+    {
+      "reviewId": "2b8d8fc8-58af-470f-9a47-4b876088af45",
+      "userName": "옹야",
+      "score": 1,
+      "content": "상단 노출 리뷰에 있는 문제들 두개 동일하게 겪고 피해를 봄. (⚠️요약 : 환불 안해주면 꼭 좀 소비자원 신고하십쇼.⚠️) 1. 구글스토어에서 구매를 하면 다음달로 넘어갔을 때 구매 취소가 안되게끔 만들어놓은 거 사실임. 소비자원 신고하면 지들이 문제인거라 환불은 해줌. 대신에 전화와서 지들은 잘못없다고 그러는데, 소비자 기만하고 있는걸 자각하시길... 신고하면 환불은 해줌. 그런데 대신에 플레이스토어에서 결제하는 걸 영구적으로 차단을 먹임. 2. 결제 폰인데, 같은 ip 와이파이 아니라고 모바일 시청 차단먹이는 것도 진짜 웃긴다. 등록기기도 왜 티비 기준인지 모르겠네. 외국에서 잘나가나? 왜 이렇게 배짱장사하는지 모르겠네.. 대체 ott 서비스 많다.. 고객 유치시킬 생각이 없는듯.. 쓰다 나아지는 거 없으면 구취하고 다른 거 쓸듯..",
+      "thumbsUpCount": 0,
+      "at": "2026-03-31T01:19:56",
+      "replyContent": null,
+      "repliedAt": "",
+      "appVersion": "26.13.01",
+      "store": "PLAY"
+    },
     {
       "reviewId": "53cf4b1e-2803-4583-8a18-453abbbc3681",
       "userName": "신동훈",
@@ -23991,18 +24003,6 @@
       "replyContent": null,
       "repliedAt": "",
       "appVersion": "24.50.01",
-      "store": "PLAY"
-    },
-    {
-      "reviewId": "2dad3e0a-ebc5-4ac6-823d-8c7a10b7e837",
-      "userName": "김선기",
-      "score": 4,
-      "content": "안드로이드티비에서 티빙 정주행 방송 끝나고 다음회 플레이 될때 소리만 들리고 화면이 안나오는 문제가 있어요",
-      "thumbsUpCount": 0,
-      "at": "2024-12-16T14:51:34",
-      "replyContent": null,
-      "repliedAt": "",
-      "appVersion": "24.45.01",
       "store": "PLAY"
     }
   ]

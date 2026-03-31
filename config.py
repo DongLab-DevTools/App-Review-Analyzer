@@ -47,31 +47,37 @@ APPS = {
     "tving": {
         "name": "티빙",
         "package_id": "net.cj.cjhv.gs.tving",
+        "app_store_id": 400101401,
         "category": "OTT",
     },
     "netflix": {
         "name": "넷플릭스",
         "package_id": "com.netflix.mediaclient",
+        "app_store_id": 363590051,
         "category": "OTT",
     },
     "wavve": {
         "name": "웨이브",
         "package_id": "kr.co.captv.pooqV2",
+        "app_store_id": 987782077,
         "category": "OTT",
     },
     "watcha": {
         "name": "왓챠",
         "package_id": "com.frograms.wplay",
+        "app_store_id": 1096493180,
         "category": "OTT",
     },
     "coupangplay": {
         "name": "쿠팡플레이",
         "package_id": "com.coupang.mobile.play",
+        "app_store_id": 1536885649,
         "category": "OTT",
     },
     "disneyplus": {
         "name": "디즈니 플러스",
         "package_id": "com.disney.disneyplus",
+        "app_store_id": 1446075923,
         "category": "OTT",
     },
 }
