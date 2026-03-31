@@ -1,4 +1,4 @@
-"""AppScope — Flask 대시보드 서버
+"""ReviewDong — Flask 대시보드 서버
 
 실행: python app.py
 브라우저: http://localhost:5000
@@ -14,7 +14,7 @@ from collections import Counter
 import pandas as pd
 from flask import Flask, render_template, jsonify, request, send_file
 
-from config import APPS, PRIMARY_APP, ANALYSIS_CATEGORIES
+from config import APPS, PRIMARY_APP, ANALYSIS_CATEGORIES, CATEGORY_GROUPS
 
 app = Flask(__name__)
 
@@ -111,6 +111,14 @@ def extract_keywords(texts, top_n=20):
 # Prepare dashboard data
 # ────────────────────────────────────────
 
+def _load_icon(app_key):
+    info_path = f"data/{app_key}_info.json"
+    if os.path.exists(info_path):
+        with open(info_path, "r", encoding="utf-8") as f:
+            return json.load(f).get("icon", "")
+    return ""
+
+
 def build_dashboard_data():
     all_data = load_all_data()
     collected_at = get_collected_at()
@@ -195,7 +203,8 @@ def build_dashboard_data():
         "complaints_top5": complaints_top5,
         "notable": notable,
         "primary_app": PRIMARY_APP,
-        "apps_config": {k: v for k, v in APPS.items() if k in all_data},
+        "apps_config": {k: {**v, "icon": _load_icon(k)} for k, v in APPS.items() if k in all_data},
+        "category_groups": CATEGORY_GROUPS,
     }
 
 
@@ -355,7 +364,7 @@ def api_refresh_stream():
 
 if __name__ == "__main__":
     print("=" * 50)
-    print("  AppScope Dashboard")
+    print("  ReviewDong Dashboard")
     print("  http://localhost:5001")
     print("=" * 50)
     app.run(debug=True, port=5001)
