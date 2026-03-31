@@ -1,0 +1,45 @@
+{
+  "app_key": "nudgeeap",
+  "app_name": "넛지EAP",
+  "package_id": "com.dain.nudgeeap",
+  "collected_at": "2026-03-31T22:02:01.444519",
+  "total_reviews": 3,
+  "reviews": [
+    {
+      "reviewId": "0d5ee711-1242-46f7-8536-597170466475",
+      "userName": "정다운",
+      "score": 1,
+      "content": "휴대폰 본인인증 메세지 안날라와서 로그인을 못함",
+      "thumbsUpCount": 0,
+      "at": "2026-03-19T19:23:15",
+      "replyContent": null,
+      "repliedAt": "",
+      "appVersion": "26.3.1",
+      "store": "PLAY"
+    },
+    {
+      "reviewId": "776a8e86-10fb-42e5-9485-1e147a6b9e1d",
+      "userName": "JY J",
+      "score": 4,
+      "content": "갤럭시인데 헬스(워치) 연동이 되었으면합니다",
+      "thumbsUpCount": 1,
+      "at": "2025-03-26T17:13:25",
+      "replyContent": null,
+      "repliedAt": "",
+      "appVersion": "1.12.0",
+      "store": "PLAY"
+    },
+    {
+      "reviewId": "",
+      "userName": "",
+      "score": 0,
+      "content": "",
+      "thumbsUpCount": 0,
+      "at": "",
+      "replyContent": "",
+      "repliedAt": "",
+      "appVersion": "",
+      "store": "APPLE"
+    }
+  ]
+}
