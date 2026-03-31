@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AppScope — 앱 리뷰 분석 대시보드</title>
+<title>ReviewDong — 앱 리뷰 분석 대시보드</title>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
@@ -28,7 +28,10 @@ body{font-family:var(--font-family);font-size:14px;font-weight:500;line-height:2
 .sidebar-logo{display:flex;align-items:center;gap:10px;padding:0 8px;margin-bottom:32px;cursor:pointer;text-decoration:none}
 .sidebar-logo svg{flex-shrink:0}
 .sidebar-logo span{font-size:18px;font-weight:700;color:var(--label-normal)}
-.sidebar-nav{display:flex;flex-direction:column;gap:2px;flex:1}
+.sidebar-nav{display:flex;flex-direction:column;gap:2px;flex:1;overflow-y:auto}
+.sidebar-nav .nav-section{margin-top:16px}
+.sidebar-nav .nav-section:first-child{margin-top:0}
+.sidebar-nav .nav-section-label{font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--label-assistive);padding:6px 12px 4px;user-select:none}
 .sidebar-nav a{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--label-alt);text-decoration:none;overflow:hidden;transition:color .15s ease;cursor:pointer}
 .sidebar-nav a::after{content:'';position:absolute;inset:0;border-radius:inherit;background:currentColor;opacity:0;transition:opacity .15s ease;pointer-events:none}
 .sidebar-nav a:hover::after{opacity:0.0375}
@@ -230,21 +233,36 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
       <path d="M8 19V13.5L14 9l6 4.5V19h-4.5v-3.5h-3V19H8z" fill="#fff" opacity=".95"/>
       <circle cx="14" cy="11.5" r="1.5" fill="#fff" opacity=".6"/>
     </svg>
-    <span>AppScope</span>
+    <span>ReviewDong</span>
   </div>
   <nav class="sidebar-nav">
-    <a class="active" data-page="p1">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="10.5" y="2" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="10.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="10.5" y="10.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
-      통합 대시보드
-    </a>
-    <a data-page="p2">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 13V7M7.5 13V5M12 13V9M16.5 13V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      앱 비교
-    </a>
-    <a data-page="p3">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M9 5.5v4l2.5 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      개별 앱 분석
-    </a>
+    <div class="nav-section">
+      <a class="active" data-page="p1">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="10.5" y="2" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="10.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="10.5" y="10.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
+        통합 대시보드
+      </a>
+      <a data-page="p2">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 13V7M7.5 13V5M12 13V9M16.5 13V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        앱 비교
+      </a>
+    </div>
+    {% for group_name, group_keys in data.category_groups.items() %}
+    <div class="nav-section">
+      <div class="nav-section-label">{{ group_name }}</div>
+      {% for app_key in group_keys %}
+        {% if app_key in data.apps_config %}
+        <a data-page="p3" data-app="{{ app_key }}">
+          {% if data.apps_config[app_key].icon %}
+          <img src="{{ data.apps_config[app_key].icon }}" width="20" height="20" style="border-radius:5px;flex-shrink:0">
+          {% else %}
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="14" rx="4" stroke="currentColor" stroke-width="1.5"/></svg>
+          {% endif %}
+          {{ data.apps_config[app_key].name }}
+        </a>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endfor %}
   </nav>
   <div class="sidebar-footer">
     <div class="label">마지막 수집</div>
@@ -501,7 +519,12 @@ document.querySelectorAll('.sidebar-nav a').forEach(link => {
     document.getElementById(link.dataset.page).classList.add('active');
     window.scrollTo(0, 0);
     if (link.dataset.page === 'p2') initP2Charts();
-    if (link.dataset.page === 'p3') loadAppData();
+    if (link.dataset.page === 'p3') {
+      if (link.dataset.app) {
+        document.getElementById('p3-app-select').value = link.dataset.app;
+      }
+      loadAppData();
+    }
   });
 });
 
