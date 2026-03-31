@@ -28,7 +28,12 @@ body{font-family:var(--font-family);font-size:14px;font-weight:500;line-height:2
 .sidebar-logo{display:flex;align-items:center;gap:10px;padding:0 8px;margin-bottom:32px;cursor:pointer;text-decoration:none}
 .sidebar-logo svg{flex-shrink:0}
 .sidebar-logo span{font-size:18px;font-weight:700;color:var(--label-normal)}
-.sidebar-nav{display:flex;flex-direction:column;gap:2px;flex:1;overflow-y:auto}
+.sidebar-nav{display:flex;flex-direction:column;gap:2px;flex:1;overflow-y:auto;padding:4px 0;margin:0 -4px;padding-right:4px}
+.sidebar-nav::-webkit-scrollbar{width:4px}
+.sidebar-nav::-webkit-scrollbar-track{background:transparent}
+.sidebar-nav::-webkit-scrollbar-thumb{background:var(--fill-strong);border-radius:9999px;min-height:40px;transition:background .2s ease}
+.sidebar-nav:not(:hover)::-webkit-scrollbar-thumb{background:transparent}
+.sidebar-nav::-webkit-scrollbar-thumb:hover{background:var(--label-assistive)}
 .sidebar-nav .nav-section{margin-top:16px}
 .sidebar-nav .nav-section:first-child{margin-top:0}
 .sidebar-nav .nav-section-label{font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--label-assistive);padding:6px 12px 4px;user-select:none}
@@ -40,7 +45,7 @@ body{font-family:var(--font-family);font-size:14px;font-weight:500;line-height:2
 .sidebar-nav a.active::after{display:none}
 .sidebar-nav a svg{flex-shrink:0;opacity:.6}
 .sidebar-nav a.active svg{opacity:1}
-.sidebar-footer{padding:12px;border-radius:8px;background:var(--fill-alt)}
+.sidebar-footer{padding:12px;border-radius:8px;background:var(--fill-alt);margin-top:12px;flex-shrink:0}
 .sidebar-footer .label{font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--label-assistive);margin-bottom:4px}
 .sidebar-footer .value{font-size:13px;font-weight:500;color:var(--label-alt)}
 
@@ -50,7 +55,7 @@ body{font-family:var(--font-family);font-size:14px;font-weight:500;line-height:2
 .page-section.active{display:block}
 .page-title{font-size:22px;font-weight:600;line-height:30px;letter-spacing:-0.0194em}
 .page-desc{font-size:15px;font-weight:500;color:var(--label-alt);margin-top:4px;line-height:22px}
-.section-title{font-size:16px;font-weight:600;line-height:24px;letter-spacing:0.0057em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title{font-size:16px;font-weight:600;line-height:24px;letter-spacing:0.0057em;margin-top:12px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .section-title .count{font-size:13px;font-weight:500;color:var(--label-assistive)}
 
 /* ── Card ── */
@@ -61,13 +66,13 @@ body{font-family:var(--font-family);font-size:14px;font-weight:500;line-height:2
 .card-header .card-title{margin-bottom:0}
 
 /* ── KPI ── */
-.kpi-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.kpi-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:36px}
 .kpi-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
 .kpi-value{font-size:28px;font-weight:700;line-height:36px;letter-spacing:-0.02em}
 .kpi-sub{font-size:13px;font-weight:500;color:var(--label-alt);margin-top:2px}
 
 /* ── App Summary Grid ── */
-.app-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.app-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:44px}
 .app-card{position:relative;overflow:hidden;cursor:pointer;transition:transform .1s ease}
 .app-card:active{transform:scale(0.98)}
 .app-card::after{content:'';position:absolute;inset:0;border-radius:inherit;background:#171719;opacity:0;transition:opacity .15s ease;pointer-events:none}
@@ -302,14 +307,19 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
     </div>
   </div>
 
-  <div class="section-title">앱별 요약 <span class="count">{{ data.apps|length }}개 앱</span></div>
+  {% for group_name, group_keys in data.category_groups.items() %}
+  {% set ns = namespace(group_apps=[]) %}
+  {% for app in data.apps if app.key in group_keys %}
+    {% set ns.group_apps = ns.group_apps + [app] %}
+  {% endfor %}
+  {% if ns.group_apps %}
+  <div class="section-title">{{ group_name }} <span class="count">{{ ns.group_apps|length }}개 앱</span></div>
   <div class="app-grid">
-    {% set colors = ['#6C63FF,#B8A9FF','#FF6B6B,#FFB4B4','#4ECDC4,#A8E6CF','#45B7D1,#96E6FF','#F093FB,#F5576C','#667EEA,#764BA2','#FF9A9E,#FECFEF','#A18CD1,#FBC2EB'] %}
-    {% for app in data.apps %}
+    {% for app in ns.group_apps %}
     <div class="card card-sm app-card" onclick="goToApp('{{ app.key }}')">
       <div class="app-name">
         {% if app.icon %}<img class="app-icon" src="{{ app.icon }}" alt="{{ app.name }}">{% else %}<div class="app-icon" style="background:var(--fill-normal)"></div>{% endif %}
-        {{ app.name }}{% if app.is_primary %} <span class="badge pos" style="font-size:11px;height:18px;margin-left:4px">담당</span>{% endif %}
+        {{ app.name }}
       </div>
       <div class="app-stats">
         <div><div class="stat-label">리뷰</div><div class="stat-value">{{ "{:,}".format(app.total) }}</div></div>
@@ -319,6 +329,8 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
     </div>
     {% endfor %}
   </div>
+  {% endif %}
+  {% endfor %}
 
   <div class="chart-grid-2">
     <div class="card">
@@ -390,8 +402,8 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
         </thead>
         <tbody>
           {% for app in data.apps %}
-          <tr{% if app.is_primary %} class="highlight"{% endif %}>
-            <td style="padding-left:24px">{% if app.is_primary %}<strong style="color:var(--primary)">{{ app.name }}</strong>{% else %}{{ app.name }}{% endif %}</td>
+          <tr>
+            <td style="padding-left:24px">{{ app.name }}</td>
             <td>{{ "{:,}".format(app.total) }}</td>
             <td><span class="stars">{{ "★" * (app.avg_score|round|int) }}{{ "☆" * (5 - app.avg_score|round|int) }}</span> {{ app.avg_score }}</td>
             <td><span class="badge pos">{{ app.pos_pct }}%</span></td>
