@@ -363,8 +363,18 @@ def api_refresh_stream():
 
 
 if __name__ == "__main__":
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+    except Exception:
+        local_ip = "0.0.0.0"
+    finally:
+        s.close()
     print("=" * 50)
     print("  ReviewDong Dashboard")
-    print("  http://localhost:5001")
+    print(f"  Local:   http://localhost:5001")
+    print(f"  Network: http://{local_ip}:5001")
     print("=" * 50)
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5001, host="0.0.0.0")
