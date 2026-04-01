@@ -444,17 +444,6 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
 
   <div class="kpi-grid-4" id="p3-kpis"></div>
 
-  <div class="chart-grid-2x3" id="p3-charts">
-    <div class="card"><div class="card-title">별점 분포</div><canvas id="chart-star-dist" height="200"></canvas></div>
-    <div class="card"><div class="card-title">감성 비율</div><canvas id="chart-sentiment-pie" height="200"></canvas></div>
-    <div class="card"><div class="card-title">버전별 별점 추이</div><canvas id="chart-version-trend" height="200"></canvas></div>
-    <div class="card"><div class="card-title">월별 리뷰 추이</div><canvas id="chart-monthly-cnt" height="200"></canvas></div>
-    <div class="card"><div class="card-title">월별 평균 별점 추이</div><canvas id="chart-monthly-rating" height="200"></canvas></div>
-    <div class="card"><div class="card-title">키워드 빈도 TOP</div><canvas id="chart-keyword-freq" height="200"></canvas></div>
-  </div>
-
-  <div class="insight-box mb-20" id="p3-insights"></div>
-
   <!-- 최근 리뷰 미리보기 -->
   <div class="card" style="padding:0">
     <div style="padding:20px 24px 0" class="flex-between">
@@ -467,6 +456,17 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
       <th style="padding-left:24px;width:60px">감성</th><th style="width:50px">스토어</th><th>별점</th><th>리뷰 본문</th><th style="padding-right:24px">작성일</th>
     </tr></thead><tbody id="p3-preview-tbody"></tbody></table></div>
   </div>
+
+  <div style="margin-top:24px" class="chart-grid-2x3" id="p3-charts">
+    <div class="card"><div class="card-title">별점 분포</div><canvas id="chart-star-dist" height="200"></canvas></div>
+    <div class="card"><div class="card-title">감성 비율</div><canvas id="chart-sentiment-pie" height="200"></canvas></div>
+    <div class="card"><div class="card-title">버전별 별점 추이</div><canvas id="chart-version-trend" height="200"></canvas></div>
+    <div class="card"><div class="card-title">월별 리뷰 추이</div><canvas id="chart-monthly-cnt" height="200"></canvas></div>
+    <div class="card"><div class="card-title">월별 평균 별점 추이</div><canvas id="chart-monthly-rating" height="200"></canvas></div>
+    <div class="card"><div class="card-title">키워드 빈도 TOP</div><canvas id="chart-keyword-freq" height="200"></canvas></div>
+  </div>
+
+  <div class="insight-box mb-20" id="p3-insights"></div>
 </section>
 
 <!-- ═══════ P4. 전체 리뷰 ═══════ -->
