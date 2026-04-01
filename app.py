@@ -394,6 +394,153 @@ def api_text(app_key):
     return send_file(buf, download_name=filename, as_attachment=True, mimetype="text/plain")
 
 
+@app.route("/api/affinity-text/<app_key>")
+def api_affinity_text(app_key):
+    """어피니티 분석용 경량 텍스트 다운로드 (번호|별점|리뷰본문)"""
+    all_data = load_all_data()
+    if app_key not in all_data:
+        return "not found", 404
+
+    results = all_data[app_key].get("results", [])
+    app_name = all_data[app_key]["app_name"]
+
+    # 최신순 정렬
+    results = sorted(results, key=lambda r: r.get("at", ""), reverse=True)
+
+    lines = []
+    for i, r in enumerate(results, 1):
+        content = (r.get("content") or "").replace("\n", " ").replace("|", "/").strip()
+        if not content:
+            continue
+        score = r.get("score", 0)
+        lines.append(f"{i}|★{score}|{content}")
+
+    text = "\n".join(lines)
+    buf = io.BytesIO(text.encode("utf-8-sig"))
+    buf.seek(0)
+
+    filename = f"{app_name}_어피니티용_{datetime.now().strftime('%Y%m%d')}.txt"
+    return send_file(buf, download_name=filename, as_attachment=True, mimetype="text/plain")
+
+
+# ────────────────────────────────────────
+# Affinity Analysis API
+# ────────────────────────────────────────
+
+def validate_affinity_json(data):
+    """어피니티 JSON 유효성 검사. 오류 시 문자열, 정상 시 None 반환."""
+    if not isinstance(data, dict):
+        return "최상위가 객체여야 합니다"
+    if "categories" not in data or not isinstance(data["categories"], list):
+        return "categories 배열이 필요합니다"
+    if not data["categories"]:
+        return "categories가 비어 있습니다"
+    for i, cat in enumerate(data["categories"]):
+        if not cat.get("label"):
+            return f"categories[{i}].label이 필요합니다"
+        subs = cat.get("subcategories")
+        if not isinstance(subs, list) or not subs:
+            return f"categories[{i}].subcategories 배열이 필요합니다"
+        for j, sub in enumerate(subs):
+            if not sub.get("label"):
+                return f"categories[{i}].subcategories[{j}].label이 필요합니다"
+            items = sub.get("items")
+            if not isinstance(items, list):
+                return f"categories[{i}].subcategories[{j}].items 배열이 필요합니다"
+    return None
+
+
+@app.route("/api/affinity/<app_key>")
+def api_affinity_get(app_key):
+    """저장된 어피니티 분석 결과 조회"""
+    path = f"data/{app_key}_affinity.json"
+    if not os.path.exists(path):
+        return jsonify({"error": "not found"}), 404
+    with open(path, "r", encoding="utf-8") as f:
+        return jsonify(json.load(f))
+
+
+@app.route("/api/affinity/<app_key>", methods=["POST"])
+def api_affinity_upload(app_key):
+    """어피니티 분석 JSON 업로드"""
+    if app_key not in APPS:
+        return jsonify({"error": "unknown app"}), 400
+
+    file = request.files.get("file")
+    if file:
+        try:
+            data = json.load(file)
+        except Exception:
+            return jsonify({"error": "JSON 파싱 실패"}), 400
+    else:
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({"error": "JSON 데이터가 없습니다"}), 400
+
+    err = validate_affinity_json(data)
+    if err:
+        return jsonify({"error": err}), 400
+
+    # meta 보완
+    if "meta" not in data:
+        data["meta"] = {}
+    data["meta"]["app_key"] = app_key
+    data["meta"]["app_name"] = APPS[app_key]["name"]
+    data["meta"]["uploaded_at"] = datetime.now().isoformat()
+
+    path = f"data/{app_key}_affinity.json"
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+    return jsonify({"ok": True, "path": path})
+
+
+@app.route("/api/affinity/<app_key>/auto")
+def api_affinity_auto(app_key):
+    """임베딩+클러스터링 자동 어피니티 분석 — SSE 스트리밍 (단계별 캐싱)"""
+    if app_key not in APPS:
+        return jsonify({"error": "unknown app"}), 400
+
+    user_key = request.args.get("api_key", "").strip()
+
+    import queue
+    import threading
+    from affinity_analyzer import run_affinity_pipeline, set_user_api_key
+
+    # 사용자 API 키가 query param으로 전달되면 적용
+    user_key = request.args.get("api_key", "").strip()
+    if user_key:
+        set_user_api_key(user_key)
+
+    msg_queue = queue.Queue()
+
+    def on_progress(msg):
+        msg_queue.put(msg)
+
+    def run():
+        try:
+            run_affinity_pipeline(app_key, on_progress=on_progress)
+            msg_queue.put("[DONE]")
+        except Exception as e:
+            msg_queue.put(f"[ERROR] {str(e)}")
+
+    def generate():
+        thread = threading.Thread(target=run, daemon=True)
+        thread.start()
+
+        while True:
+            try:
+                msg = msg_queue.get(timeout=120)
+                yield f"data: {msg}\n\n"
+                if msg.startswith("[DONE]") or msg.startswith("[ERROR]"):
+                    break
+            except queue.Empty:
+                yield "data: [ERROR] 시간 초과\n\n"
+                break
+
+    return app.response_class(generate(), mimetype="text/event-stream")
+
+
 @app.route("/api/refresh-stream")
 def api_refresh_stream():
     """리뷰 데이터 새로고침 — SSE로 실시간 로그 스트리밍"""
