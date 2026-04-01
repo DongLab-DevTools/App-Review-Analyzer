@@ -338,6 +338,62 @@ def api_excel(app_key):
                      mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
+@app.route("/api/text/<app_key>")
+def api_text(app_key):
+    """필터된 리뷰 텍스트(TSV) 다운로드"""
+    all_data = load_all_data()
+    if app_key not in all_data:
+        return "not found", 404
+
+    results = all_data[app_key].get("results", [])
+    app_name = all_data[app_key]["app_name"]
+
+    sentiment = request.args.get("sentiment", "")
+    category = request.args.get("category", "")
+    score = request.args.get("score", "")
+    version = request.args.get("version", "")
+    month_start = request.args.get("month_start", "")
+    month_end = request.args.get("month_end", "")
+
+    filtered = results
+    if sentiment:
+        filtered = [r for r in filtered if r.get("sentiment") == sentiment]
+    if category:
+        filtered = [r for r in filtered if r.get("category") == category]
+    if score:
+        filtered = [r for r in filtered if r.get("score") == int(score)]
+    if version:
+        filtered = [r for r in filtered if r.get("appVersion") == version]
+    if month_start:
+        filtered = [r for r in filtered if r.get("at", "") >= month_start]
+    if month_end:
+        filtered = [r for r in filtered if r.get("at", "")[:7] <= month_end]
+
+    now = datetime.now().strftime("%Y-%m-%d")
+    lines = [
+        f"# 앱 리뷰 데이터 — {app_name}",
+        f"# 총 {len(filtered)}건 | 내보낸 날짜: {now}",
+        "#",
+        "# 형식: [번호] ★별점 | 작성일 | 스토어(PLAY/APPSTORE) | 작성자명 | 앱버전",
+        "# 다음 줄: 리뷰 본문",
+        "",
+    ]
+    for i, r in enumerate(filtered, 1):
+        content = (r.get("content") or "").replace("\n", " ").strip()
+        meta = (f"[{i}] ★{r.get('score','')} | {r.get('at','')[:10]} | "
+                f"{r.get('store','')} | {r.get('userName','')} | v{r.get('appVersion','')}")
+        lines.append(meta)
+        lines.append(content)
+        lines.append("")
+
+    text = "\n".join(lines)
+    buf = io.BytesIO(text.encode("utf-8-sig"))
+    buf.seek(0)
+
+    filename = f"{app_name}_리뷰_{datetime.now().strftime('%Y%m%d')}.txt"
+    return send_file(buf, download_name=filename, as_attachment=True, mimetype="text/plain")
+
+
 @app.route("/api/refresh-stream")
 def api_refresh_stream():
     """리뷰 데이터 새로고침 — SSE로 실시간 로그 스트리밍"""

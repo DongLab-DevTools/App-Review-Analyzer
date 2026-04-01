@@ -457,7 +457,23 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
     </tr></thead><tbody id="p3-preview-tbody"></tbody></table></div>
   </div>
 
-  <div style="margin-top:24px" class="chart-grid-2x3" id="p3-charts">
+  <!-- 리뷰 타임라인 -->
+  <div class="card" style="margin-top:24px;margin-bottom:24px">
+    <div class="flex-between" style="margin-bottom:12px">
+      <div class="card-title">리뷰 타임라인</div>
+      <span class="timeline-period" id="p3-timeline-period" style="font-size:12px;color:var(--label-assistive)"></span>
+    </div>
+    <div style="position:relative;height:260px"><canvas id="chart-review-timeline"></canvas></div>
+    <div style="display:flex;gap:16px;justify-content:center;margin-top:12px">
+      <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--label-alt)"><span style="width:8px;height:8px;border-radius:50%;background:#FF4242;display:inline-block"></span>1점</span>
+      <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--label-alt)"><span style="width:8px;height:8px;border-radius:50%;background:#FF9200;display:inline-block"></span>2점</span>
+      <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--label-alt)"><span style="width:8px;height:8px;border-radius:50%;background:#FFD000;display:inline-block"></span>3점</span>
+      <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--label-alt)"><span style="width:8px;height:8px;border-radius:50%;background:#7EB3FF;display:inline-block"></span>4점</span>
+      <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--label-alt)"><span style="width:8px;height:8px;border-radius:50%;background:#0066FF;display:inline-block"></span>5점</span>
+    </div>
+  </div>
+
+  <div class="chart-grid-2x3" id="p3-charts">
     <div class="card"><div class="card-title">별점 분포</div><canvas id="chart-star-dist" height="200"></canvas></div>
     <div class="card"><div class="card-title">감성 비율</div><canvas id="chart-sentiment-pie" height="200"></canvas></div>
     <div class="card"><div class="card-title">버전별 별점 추이</div><canvas id="chart-version-trend" height="200"></canvas></div>
@@ -671,6 +687,91 @@ function renderP3Charts() {
       options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{...noGrid,ticks:{font:{size:12}}},x:{...lightGrid}}}
     });
   }
+
+  // 리뷰 타임라인 (scatter)
+  // 참고: 같은 날짜의 리뷰가 아래에서 위로 쌓이고, x에 약간의 jitter를 줘서 겹침 방지
+  const timelineColors = {1:'#FF4242',2:'#FF9200',3:'#FFD000',4:'#7EB3FF',5:'#0066FF'};
+  const withDate = results.filter(r=>r.at).slice().sort((a,b)=>(a.at||'').localeCompare(b.at||''));
+  if(withDate.length) {
+    const dates = withDate.map(r=>new Date(r.at.substring(0,10)).getTime());
+    const minDate = Math.min(...dates), maxDate = Math.max(...dates);
+    const dateRange = maxDate - minDate || 86400000;
+    const periodEl = document.getElementById('p3-timeline-period');
+    const fmt = d => { const dt=new Date(d); return `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')}`; };
+    periodEl.textContent = `${fmt(minDate)} — ${fmt(maxDate)} · ${withDate.length.toLocaleString()}개 리뷰`;
+
+    // 날짜별 그룹핑 → 모든 별점이 함께 아래에서 위로 쌓임
+    const dateBuckets = {};
+    withDate.forEach(r => {
+      const key = r.at.substring(0,10);
+      if(!dateBuckets[key]) dateBuckets[key] = [];
+      dateBuckets[key].push(r);
+    });
+    const maxStack = Math.max(...Object.values(dateBuckets).map(b=>b.length));
+    const jitterAmt = dateRange * 0.004; // x축 jitter 크기
+
+    const pointMap = {};
+    [1,2,3,4,5].forEach(s => pointMap[s] = []);
+    Object.entries(dateBuckets).forEach(([dateStr, reviews]) => {
+      const baseX = new Date(dateStr).getTime();
+      reviews.sort((a,b) => a.score - b.score); // 1점 바닥 → 5점 꼭대기
+      reviews.forEach((r, i) => {
+        const jitter = (Math.random() - 0.5) * jitterAmt;
+        pointMap[r.score].push({
+          x: baseX + jitter,
+          y: i * 1.4,         // 점 간격 넓혀서 겹침 방지
+          _date: dateStr,
+          _content: (r.content||'').substring(0,40)
+        });
+      });
+    });
+
+    const datasets = [1,2,3,4,5].map(score => ({
+      label: score+'점',
+      data: pointMap[score],
+      backgroundColor: timelineColors[score],
+      borderColor: timelineColors[score],
+      borderWidth: 0.3,
+      pointRadius: 3,
+      pointHoverRadius: 5,
+      pointStyle: 'circle',
+    }));
+
+    p3Charts.timeline = new Chart(document.getElementById('chart-review-timeline'), {
+      type:'scatter',
+      data:{ datasets },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        animation:{ duration:400 },
+        plugins:{
+          legend:{display:false},
+          tooltip:{
+            callbacks:{
+              title: ctx => ctx[0].raw._date,
+              label: ctx => `${ctx.dataset.label} · ${ctx.raw._content||''}`
+            }
+          }
+        },
+        scales:{
+          x:{
+            type:'linear', position:'bottom',
+            ticks:{
+              callback: v => { const d=new Date(v); const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return m[d.getMonth()]+'\n'+d.getFullYear(); },
+              maxTicksLimit:6, font:{size:11}, color:'rgba(55,56,60,0.28)'
+            },
+            grid:{ display:false },
+            border:{ display:true, color:'var(--line-normal)' },
+            min: minDate - 86400000*2, max: maxDate + 86400000*2
+          },
+          y:{
+            display:false,
+            min: -1,
+            max: maxStack * 1.6
+          }
+        }
+      }
+    });
+  }
 }
 
 function renderP3Insights() {
@@ -770,10 +871,16 @@ function renderP4Filters() {
         <div class="select-wrap"><select class="select" ${sm} id="f-ms" onchange="currentPage=1;renderP4Reviews()"><option value="">전체</option>${months.map(m=>`<option value="${m}">${m}</option>`).join('')}</select></div>
       </div>
       <span class="result-count" id="p4-result-count"></span>
-      <button class="btn btn-outline btn-sm" style="margin-left:8px" onclick="downloadExcel()">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 2v12M12 2v12M1 5h6M9 5h6M1 11h6M9 11h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        엑셀 다운로드
-      </button>
+      <div style="display:flex;gap:6px;margin-left:8px">
+        <button class="btn btn-outline btn-sm" onclick="downloadFile('excel')">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 2v12M12 2v12M1 5h6M9 5h6M1 11h6M9 11h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          엑셀
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="downloadFile('text')">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 2h10M3 5.5h10M3 9h7M3 12.5h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          텍스트
+        </button>
+      </div>
     </div>`;
 }
 
@@ -852,7 +959,7 @@ function renderP4Reviews() {
   document.getElementById('p4-pagination').innerHTML = pHtml;
 }
 
-function downloadExcel() {
+function downloadFile(type) {
   const key=document.getElementById('p3-app-select').value;
   const p=new URLSearchParams();
   if(currentSentFilter) p.set('sentiment',currentSentFilter);
@@ -861,7 +968,8 @@ function downloadExcel() {
     const v=document.getElementById(id)?.value||'';
     if(v) p.set(param,v);
   });
-  window.location.href=`/api/excel/${key}?${p.toString()}`;
+  const endpoint = type==='text' ? 'text' : 'excel';
+  window.location.href=`/api/${endpoint}/${key}?${p.toString()}`;
 }
 
 const TOTAL_APPS = {{ data.apps|length }};
