@@ -84,9 +84,9 @@ APPS = {
 
 # 카테고리 그룹 (사이드바 섹션용)
 CATEGORY_GROUPS = {
+    "OTT": ["tving", "netflix", "wavve", "watcha", "coupangplay", "disneyplus"],
     "헬스케어": ["nudgeeap", "trost", "cashwalk", "genieat"],
     "생활/금융": ["timespread", "monyapp"],
-    "OTT": ["tving", "netflix", "wavve", "watcha", "coupangplay", "disneyplus"],
 }
 
 # 담당 앱 키
