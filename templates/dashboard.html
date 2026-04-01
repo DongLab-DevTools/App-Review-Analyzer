@@ -6,6 +6,10 @@
 <title>ReviewDong — 앱 리뷰 분석 대시보드</title>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-weighted-voronoi@1.1.3/build/d3-weighted-voronoi.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-voronoi-map@2.1.1/build/d3-voronoi-map.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-voronoi-treemap@1.1.1/build/d3-voronoi-treemap.js"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -226,6 +230,68 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
 .modal-log .log-line.done{opacity:1;color:var(--status-positive);font-weight:600}
 .modal-footer{padding:12px 24px 20px;display:flex;justify-content:flex-end}
 @media(max-width:767px){.sidebar{display:none}.main{margin-left:0;padding:20px 16px}.app-grid{grid-template-columns:1fr}}
+
+/* ── Affinity Bubble (P5) ── */
+.affinity-header{display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.affinity-header .btn-group{display:flex;gap:8px;margin-left:auto}
+.affinity-breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--label-alt);margin-bottom:12px}
+.affinity-breadcrumb a{color:var(--primary);cursor:pointer;text-decoration:none}
+.affinity-breadcrumb a:hover{text-decoration:underline}
+.affinity-breadcrumb .sep{color:var(--label-assistive)}
+.affinity-container{position:relative;width:100%;background:var(--bg-normal);border-radius:12px;box-shadow:inset 0 0 0 1px var(--line-normal);overflow:hidden;line-height:0}
+.affinity-container svg{display:block;width:100%;height:auto}
+.affinity-container .voronoi-cell{stroke:var(--bg-normal);stroke-width:2;cursor:pointer;transition:opacity .15s ease}
+.affinity-container .voronoi-cell:hover{opacity:0.85}
+.affinity-container .voronoi-cat-border{fill:none;stroke:var(--label-assistive);stroke-width:2.5;pointer-events:none}
+.affinity-container .voronoi-label{pointer-events:none;font-family:var(--font-family);font-weight:600;fill:var(--label-normal)}
+.affinity-container .voronoi-label-sub{pointer-events:none;font-family:var(--font-family);font-weight:500;fill:rgba(23,23,25,0.7)}
+.affinity-container .voronoi-count{pointer-events:none;font-family:var(--font-family);font-weight:500;fill:rgba(23,23,25,0.45);font-size:11px}
+
+.affinity-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.affinity-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;padding:12px 16px}
+.affinity-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--label-alt)}
+.affinity-legend-item .dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+.affinity-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px;text-align:center}
+.affinity-empty-icon{width:64px;height:64px;border-radius:16px;background:var(--fill-normal);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.affinity-empty h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.affinity-empty p{font-size:14px;color:var(--label-alt);max-width:400px;line-height:22px;margin-bottom:24px}
+
+.affinity-tooltip{position:fixed;z-index:3000;background:var(--bg-normal);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.12),inset 0 0 0 1px var(--line-normal);padding:14px 16px;pointer-events:none;max-width:320px;opacity:0;transition:opacity .12s ease}
+.affinity-tooltip.visible{opacity:1}
+.affinity-tooltip .tt-label{font-size:14px;font-weight:600;margin-bottom:4px}
+.affinity-tooltip .tt-cat{font-size:11px;font-weight:500;color:var(--label-assistive);margin-bottom:8px}
+.affinity-tooltip .tt-stats{display:flex;gap:16px;font-size:12px;color:var(--label-alt);margin-bottom:8px}
+.affinity-tooltip .tt-stats strong{font-weight:600;color:var(--label-normal)}
+.affinity-tooltip .tt-preview{font-size:12px;line-height:18px;color:var(--label-alt);border-top:1px solid var(--line-alt);padding-top:8px}
+.affinity-tooltip .tt-preview-item{margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Detail side panel */
+.affinity-detail{position:fixed;top:0;right:-480px;width:480px;max-width:100vw;height:100vh;background:var(--bg-normal);box-shadow:-4px 0 24px rgba(0,0,0,0.08);z-index:2500;display:flex;flex-direction:column;transition:right .25s ease}
+.affinity-detail.open{right:0}
+.affinity-detail-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--line-alt)}
+.affinity-detail-header h3{font-size:16px;font-weight:600}
+.affinity-detail-body{flex:1;overflow-y:auto;padding:16px 24px}
+.affinity-detail-body .review-item{padding:14px 0;border-bottom:1px solid var(--line-alt)}
+.affinity-detail-body .review-item:last-child{border-bottom:none}
+.affinity-detail-body .review-item .meta{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--label-alt);margin-bottom:6px}
+.affinity-detail-body .review-item .text{font-size:14px;line-height:22px;color:var(--label-neutral)}
+.affinity-detail-overlay{position:fixed;inset:0;z-index:2400;background:rgba(0,0,0,0.2);display:none}
+.affinity-detail-overlay.open{display:block}
+
+.affinity-schema-box{background:var(--bg-alt);border-radius:8px;padding:16px;margin-top:16px;box-shadow:inset 0 0 0 1px var(--line-alt)}
+.affinity-schema-box pre{font-family:'SF Mono',Menlo,monospace;font-size:11px;line-height:16px;color:var(--label-neutral);white-space:pre-wrap;max-height:300px;overflow-y:auto}
+
+/* ── Step Indicator (Montage) ── */
+.step-bar{display:flex;align-items:center;gap:4px;padding:4px;background:var(--fill-normal);border-radius:10px;margin-bottom:16px}
+.step-chip{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 0;border-radius:8px;font-size:13px;font-weight:500;letter-spacing:0.0145em;color:var(--label-assistive);transition:all .2s ease;cursor:default;position:relative}
+.step-chip .step-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:transparent;color:var(--label-assistive);transition:all .2s ease}
+.step-chip.active{background:var(--bg-normal);color:var(--primary);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.step-chip.active .step-num{background:var(--primary);color:#fff}
+.step-chip.done{color:var(--label-normal);font-weight:600}
+.step-chip.done .step-num{background:var(--primary);color:#fff}
+.step-chip.error{color:var(--status-negative)}
+.step-chip.error .step-num{background:var(--status-negative);color:#fff}
 </style>
 </head>
 <body>
@@ -439,7 +505,13 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
         </select>
       </div>
     </div>
-    <span style="font-size:13px;color:var(--label-assistive)">마지막 수집: {{ data.collected_at }}</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="btn btn-outline btn-sm" onclick="goToAffinity()" style="gap:4px">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="6.5" r="3" stroke="currentColor" stroke-width="1.3"/><circle cx="11" cy="5.5" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="9" cy="11" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>
+        어피니티 분석
+      </button>
+      <span style="font-size:13px;color:var(--label-assistive)">마지막 수집: {{ data.collected_at }}</span>
+    </div>
   </div>
 
   <div class="kpi-grid-4" id="p3-kpis"></div>
@@ -508,6 +580,140 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
   </div>
 </section>
 
+<!-- ═══════ P5. 어피니티 분석 ═══════ -->
+<section class="page-section" id="p5">
+  <div class="affinity-header">
+    <button class="btn btn-ghost btn-sm" onclick="goBackToP3()" style="color:var(--label-alt)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L5 7l3.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      앱 분석으로
+    </button>
+    <h1 class="page-title" id="p5-title">어피니티 분석</h1>
+    <div class="btn-group">
+      <button class="btn btn-outline btn-sm" onclick="startAutoAffinity()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5v3M8 11.5v3M1.5 8h3M11.5 8h3M3.4 3.4l2.1 2.1M10.5 10.5l2.1 2.1M3.4 12.6l2.1-2.1M10.5 5.5l2.1-2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        자동 분석
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="downloadAffinityText()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M4 7l4 4 4-4M3 13h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        리뷰 텍스트
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="showAffinitySchema()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 2h5l4 4v8H4V2z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 2v4h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        JSON 스키마
+      </button>
+      <label class="btn btn-primary btn-sm" style="cursor:pointer">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 10v3h12v-3M8 2v8M5 7l3 3 3-3" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        JSON 업로드
+        <input type="file" accept=".json" style="display:none" onchange="handleAffinityUpload(event)">
+      </label>
+    </div>
+  </div>
+
+  <!-- Summary KPIs -->
+  <div class="affinity-summary" id="p5-summary" style="display:none"></div>
+
+  <!-- Breadcrumb -->
+  <div class="affinity-breadcrumb" id="p5-breadcrumb" style="display:none">
+    <a onclick="affinityZoomOut()">전체</a>
+  </div>
+
+  <!-- Treemap container -->
+  <div class="affinity-container" id="p5-treemap" style="display:none"></div>
+
+  <!-- Legend -->
+  <div class="affinity-legend" id="p5-legend" style="display:none"></div>
+
+  <!-- Empty state -->
+  <div class="affinity-empty" id="p5-empty">
+    <div class="affinity-empty-icon">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="8" stroke="var(--label-assistive)" stroke-width="1.5"/><circle cx="11" cy="12" r="2.5" stroke="var(--label-assistive)" stroke-width="1.2"/><circle cx="17.5" cy="11" r="1.8" stroke="var(--label-assistive)" stroke-width="1.2"/><circle cx="14.5" cy="17" r="2" stroke="var(--label-assistive)" stroke-width="1.2"/></svg>
+    </div>
+    <h3>어피니티 분석 결과가 없습니다</h3>
+    <p>리뷰 데이터를 AI(Claude, ChatGPT 등)로 분석한 뒤 결과 JSON을 업로드하면 보로노이 트리맵으로 시각화됩니다.</p>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline btn-sm" onclick="showAffinitySchema()">JSON 스키마 확인</button>
+      <label class="btn btn-primary btn-sm" style="cursor:pointer">
+        JSON 업로드
+        <input type="file" accept=".json" style="display:none" onchange="handleAffinityUpload(event)">
+      </label>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<!-- Affinity tooltip -->
+<div class="affinity-tooltip" id="affinity-tooltip"></div>
+
+<!-- Affinity detail panel -->
+<div class="affinity-detail-overlay" id="affinity-overlay" onclick="closeAffinityDetail()"></div>
+<div class="affinity-detail" id="affinity-detail">
+  <div class="affinity-detail-header">
+    <h3 id="affinity-detail-title">리뷰 상세</h3>
+    <button class="btn btn-ghost btn-sm" onclick="closeAffinityDetail()" style="width:32px;padding:0">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="affinity-detail-body" id="affinity-detail-body"></div>
+</div>
+
+<!-- Affinity Auto-Analyze Modal -->
+<div class="modal-overlay" id="affinity-auto-modal" style="display:none">
+  <div class="modal" style="width:600px">
+    <div class="modal-header">
+      <span class="modal-title">어피니티 자동 분석</span>
+      <button class="btn btn-ghost btn-sm" id="affinity-auto-close" onclick="closeAutoAffinity()" style="display:none;width:32px;padding:0">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <!-- Step Bar (Segmented style) -->
+      <div class="step-bar" id="affinity-steps">
+        <div class="step-chip" data-step="1"><span class="step-num">1</span>전처리</div>
+        <div class="step-chip" data-step="2"><span class="step-num">2</span>임베딩</div>
+        <div class="step-chip" data-step="3"><span class="step-num">3</span>대분류</div>
+        <div class="step-chip" data-step="4"><span class="step-num">4</span>소분류</div>
+        <div class="step-chip" data-step="5"><span class="step-num">5</span>라벨링</div>
+      </div>
+
+      <div class="modal-status" id="affinity-auto-status">준비 중...</div>
+      <div class="modal-log" id="affinity-auto-log"></div>
+      <div id="affinity-apikey-box" style="display:none;margin-top:12px;padding:14px 16px;background:var(--bg-alt);border-radius:8px;box-shadow:inset 0 0 0 1px var(--line-alt)">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">API 키 소진 — 직접 입력하여 계속</div>
+        <p style="font-size:12px;color:var(--label-alt);line-height:18px;margin-bottom:10px"><a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--primary)">Google AI Studio</a>에서 무료 API 키를 발급받을 수 있습니다.</p>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="affinity-user-apikey" placeholder="AIzaSy..." style="flex:1;height:32px;padding:0 10px;border:none;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line-normal);font-family:var(--font-family);font-size:13px;background:var(--bg-normal)">
+          <button class="btn btn-primary btn-sm" onclick="retryWithUserKey()">재시도</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" id="affinity-auto-cancel" onclick="cancelAutoAffinity()">취소</button>
+      <button class="btn btn-primary btn-sm" id="affinity-auto-done" style="display:none;margin-left:8px" onclick="closeAutoAffinityAndLoad()">결과 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Schema Modal -->
+<div class="modal-overlay" id="schema-modal" style="display:none" onclick="if(event.target===this)closeSchemaModal()">
+  <div class="modal" style="width:600px">
+    <div class="modal-header">
+      <span class="modal-title">결과 JSON 스키마</span>
+      <button class="btn btn-ghost btn-sm" onclick="closeSchemaModal()" style="width:32px;padding:0">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="gap:8px">
+      <p style="font-size:13px;color:var(--label-alt);line-height:20px">AI(Claude, ChatGPT 등)에 리뷰 데이터와 함께 아래 스키마를 전달하면 결과 JSON을 생성할 수 있습니다.</p>
+      <div style="background:var(--bg-alt);border-radius:8px;padding:16px;box-shadow:inset 0 0 0 1px var(--line-alt);flex:1;overflow:hidden;display:flex;flex-direction:column">
+        <pre id="schema-modal-pre" style="font-family:'SF Mono',Menlo,monospace;font-size:11px;line-height:16px;color:var(--label-neutral);white-space:pre-wrap;overflow-y:auto;flex:1"></pre>
+      </div>
+    </div>
+    <div class="modal-footer" style="gap:8px">
+      <button class="btn btn-outline btn-sm" id="schema-copy-btn" onclick="copySchema()">복사</button>
+      <button class="btn btn-primary btn-sm" onclick="closeSchemaModal()">확인</button>
+    </div>
+  </div>
 </div>
 
 <!-- Refresh Modal -->
@@ -1082,6 +1288,679 @@ function goToApp(appKey) {
 }
 
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+// ═══════════════════════════════════
+// P5. 어피니티 분석 (Voronoi Treemap)
+// ═══════════════════════════════════
+
+const AFFINITY_SCHEMA = {
+  meta: { app_name: "앱 이름", platform: "playstore | appstore | all", total_reviews: 2847, analyzed_at: "2026-03-31T12:00:00Z" },
+  categories: [{
+    label: "대분류 라벨", description: "이 카테고리에 대한 한 줄 설명",
+    subcategories: [{
+      label: "소분류 라벨", sentiment: "positive | negative | neutral | mixed", count: 15,
+      items: [{ text: "원본 리뷰 텍스트", rating: 4, date: "2026-03-15" }]
+    }]
+  }]
+};
+
+const AFFINITY_COLORS = [
+  '#7EB3FF','#7EDBA6','#FFc98A','#FF9A9A','#C4B5FD',
+  '#93C5FD','#86EFAC','#FDE68A','#FCA5A5','#DDD6FE',
+  '#67E8F9','#A7F3D0','#FDE047','#F9A8D4','#A5B4FC'
+];
+
+let affinityData = null;
+let affinityZoomed = null; // current zoomed category index or null
+
+function goToAffinity() {
+  const key = document.getElementById('p3-app-select').value;
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('p5').classList.add('active');
+  document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active'));
+  window.scrollTo(0, 0);
+  const appInfo = APPS_DATA.find(a => a.key === key);
+  const appName = currentAppData ? currentAppData.app_name : (appInfo ? appInfo.name : key);
+  document.getElementById('p5-title').textContent = appName + ' 어피니티 분석';
+  loadAffinityData(key);
+}
+
+async function loadAffinityData(appKey) {
+  try {
+    const res = await fetch(`/api/affinity/${appKey}`);
+    if (res.ok) {
+      affinityData = await res.json();
+      affinityZoomed = null;
+      renderAffinity();
+    } else {
+      showAffinityEmpty();
+    }
+  } catch(e) {
+    showAffinityEmpty();
+  }
+}
+
+function showAffinityEmpty() {
+  affinityData = null;
+  document.getElementById('p5-empty').style.display = '';
+  document.getElementById('p5-treemap').style.display = 'none';
+  document.getElementById('p5-summary').style.display = 'none';
+  document.getElementById('p5-breadcrumb').style.display = 'none';
+  document.getElementById('p5-legend').style.display = 'none';
+}
+
+function showAffinitySchema() {
+  document.getElementById('schema-modal-pre').textContent = JSON.stringify(AFFINITY_SCHEMA, null, 2);
+  document.getElementById('schema-modal').style.display = 'flex';
+}
+
+function closeSchemaModal() {
+  document.getElementById('schema-modal').style.display = 'none';
+}
+
+// ── Auto Affinity Analysis ──
+let affinityEvtSource = null;
+let affinityUserKey = '';
+let affinityCountdownTimer = null;
+
+const AFFINITY_STEPS = [
+  { key: 'preprocess', label: '전처리' },
+  { key: 'embed',      label: '임베딩' },
+  { key: 'cluster1',   label: '대분류' },
+  { key: 'cluster2',   label: '소분류' },
+  { key: 'label',      label: '라벨링' },
+];
+
+const CHECK_SVG = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-4.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function updateStepIndicator(activeStep, state) {
+  const chips = document.querySelectorAll('#affinity-steps .step-chip');
+  const activeIdx = AFFINITY_STEPS.findIndex(s => s.key === activeStep);
+
+  chips.forEach((chip, i) => {
+    const num = chip.querySelector('.step-num');
+    chip.classList.remove('active', 'done', 'error');
+    num.innerHTML = i + 1;
+
+    if (i < activeIdx) {
+      chip.classList.add('done');
+      num.innerHTML = CHECK_SVG;
+    } else if (i === activeIdx) {
+      if (state === 'done') {
+        chip.classList.add('done');
+        num.innerHTML = CHECK_SVG;
+      } else if (state === 'error') {
+        chip.classList.add('error');
+        num.textContent = '!';
+      } else {
+        chip.classList.add('active');
+      }
+    }
+  });
+}
+
+function resetStepIndicator() {
+  document.querySelectorAll('#affinity-steps .step-chip').forEach((chip, i) => {
+    chip.classList.remove('active', 'done', 'error');
+    chip.querySelector('.step-num').innerHTML = i + 1;
+  });
+}
+
+function startCountdown(seconds) {
+  clearCountdown();
+  const status = document.getElementById('affinity-auto-status');
+  const baseText = status.textContent.replace(/\(\d+초\)/, '').trim();
+  let remaining = seconds;
+  status.textContent = `${baseText} (${remaining}초)`;
+  affinityCountdownTimer = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearCountdown();
+      return;
+    }
+    status.textContent = `${baseText} (${remaining}초)`;
+  }, 1000);
+}
+
+function clearCountdown() {
+  if (affinityCountdownTimer) {
+    clearInterval(affinityCountdownTimer);
+    affinityCountdownTimer = null;
+  }
+}
+
+function detectStep(msg) {
+  if (msg.includes('전처리')) return 'preprocess';
+  if (msg.includes('임베딩')) return 'embed';
+  if (msg.includes('대분류') || msg.includes('1차 클러스터링')) return 'cluster1';
+  if (msg.includes('소분류') || msg.includes('2차 클러스터링')) return 'cluster2';
+  if (msg.includes('LLM') || msg.includes('라벨링')) return 'label';
+  return null;
+}
+
+async function startAutoAffinity() {
+  const key = document.getElementById('p3-app-select').value;
+  const modal = document.getElementById('affinity-auto-modal');
+  const log = document.getElementById('affinity-auto-log');
+  const status = document.getElementById('affinity-auto-status');
+
+  modal.style.display = 'flex';
+  log.innerHTML = '';
+  status.textContent = '분석 시작...';
+  resetStepIndicator();
+  document.getElementById('affinity-auto-cancel').style.display = '';
+  document.getElementById('affinity-auto-done').style.display = 'none';
+  document.getElementById('affinity-auto-close').style.display = 'none';
+  document.getElementById('affinity-apikey-box').style.display = 'none';
+
+  let currentStep = null;
+
+  const qs = affinityUserKey ? `?api_key=${encodeURIComponent(affinityUserKey)}` : '';
+  affinityEvtSource = new EventSource(`/api/affinity/${key}/auto${qs}`);
+  affinityEvtSource.onmessage = function(e) {
+    const msg = e.data;
+
+    if (msg === '[DONE]') {
+      affinityEvtSource.close();
+      affinityEvtSource = null;
+      clearCountdown();
+      // 모든 스텝 완료 표시
+      updateStepIndicator('label', 'done');
+      status.textContent = '분석 완료!';
+      addAutoLog(msg, 'done');
+      document.getElementById('affinity-auto-cancel').style.display = 'none';
+      document.getElementById('affinity-auto-done').style.display = '';
+      document.getElementById('affinity-auto-close').style.display = 'flex';
+      return;
+    }
+    if (msg.startsWith('[ERROR]')) {
+      affinityEvtSource.close();
+      affinityEvtSource = null;
+      clearCountdown();
+      if (currentStep) updateStepIndicator(currentStep, 'error');
+      status.textContent = '오류 발생';
+      addAutoLog(msg, 'error');
+      document.getElementById('affinity-auto-cancel').style.display = 'none';
+      document.getElementById('affinity-auto-close').style.display = 'flex';
+      if (msg.includes('할당량') || msg.includes('소진') || msg.includes('429')) {
+        document.getElementById('affinity-apikey-box').style.display = '';
+      }
+      return;
+    }
+
+    // 스텝 감지 & 업데이트
+    const step = detectStep(msg);
+    if (step && step !== currentStep) {
+      // 이전 스텝 완료 표시
+      if (currentStep) updateStepIndicator(currentStep, 'done');
+      currentStep = step;
+      updateStepIndicator(currentStep, 'active');
+    }
+    // 완료 키워드가 있으면 현재 스텝 done
+    if (step && currentStep === step && (msg.includes('완료') || msg.includes('캐시 사용'))) {
+      updateStepIndicator(currentStep, 'done');
+    }
+
+    // 대기 메시지 → 카운트다운
+    clearCountdown();
+    const waitMatch = msg.match(/(\d+)초/);
+    if (waitMatch && (msg.includes('대기') || msg.includes('TPM') || msg.includes('RPM'))) {
+      status.textContent = msg;
+      startCountdown(parseInt(waitMatch[1]));
+    } else {
+      status.textContent = msg;
+    }
+
+    const isHighlight = msg.includes('완료') || msg.includes('시작') || msg.includes('캐시');
+    addAutoLog(msg, isHighlight ? 'highlight' : '');
+  };
+
+  affinityEvtSource.onerror = function() {
+    affinityEvtSource.close();
+    affinityEvtSource = null;
+    clearCountdown();
+    status.textContent = '연결 종료';
+    if (currentStep) updateStepIndicator(currentStep, 'error');
+    document.getElementById('affinity-auto-cancel').style.display = 'none';
+    document.getElementById('affinity-auto-close').style.display = 'flex';
+  };
+}
+
+function addAutoLog(text, cls) {
+  const log = document.getElementById('affinity-auto-log');
+  const line = document.createElement('div');
+  line.className = 'log-line' + (cls ? ' ' + cls : '');
+  line.textContent = text;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function cancelAutoAffinity() {
+  if (affinityEvtSource) { affinityEvtSource.close(); affinityEvtSource = null; }
+  document.getElementById('affinity-auto-status').textContent = '취소됨';
+  addAutoLog('사용자에 의해 취소됨', 'error');
+  document.getElementById('affinity-auto-cancel').style.display = 'none';
+  document.getElementById('affinity-auto-close').style.display = 'flex';
+}
+
+function closeAutoAffinity() {
+  document.getElementById('affinity-auto-modal').style.display = 'none';
+  if (affinityEvtSource) { affinityEvtSource.close(); affinityEvtSource = null; }
+}
+
+function retryWithUserKey() {
+  const keyInput = document.getElementById('affinity-user-apikey');
+  const key = keyInput.value.trim();
+  if (!key) { keyInput.focus(); return; }
+  if (!key.startsWith('AIza')) { alert('올바른 Gemini API 키를 입력해주세요 (AIza...)'); return; }
+  document.getElementById('affinity-apikey-box').style.display = 'none';
+  // 사용자 키를 query param으로 전달하여 재시작
+  affinityUserKey = key;
+  startAutoAffinity();
+}
+
+function closeAutoAffinityAndLoad() {
+  document.getElementById('affinity-auto-modal').style.display = 'none';
+  const key = document.getElementById('p3-app-select').value;
+  loadAffinityData(key);
+}
+
+function downloadAffinityText() {
+  const key = document.getElementById('p3-app-select').value;
+  window.location.href = `/api/affinity-text/${key}`;
+}
+
+function copySchema() {
+  navigator.clipboard.writeText(JSON.stringify(AFFINITY_SCHEMA, null, 2));
+  const btn = document.getElementById('schema-copy-btn');
+  btn.textContent = '복사됨!';
+  setTimeout(() => { btn.textContent = '복사'; }, 1500);
+}
+
+// ── JSON Upload ──
+async function handleAffinityUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = '';
+
+  let data;
+  try {
+    const text = await file.text();
+    data = JSON.parse(text);
+  } catch(err) {
+    alert('JSON 파싱 실패: ' + err.message);
+    return;
+  }
+
+  // Client-side validation
+  const err = validateAffinityClient(data);
+  if (err) {
+    alert('유효성 오류: ' + err);
+    return;
+  }
+
+  const appKey = document.getElementById('p3-app-select').value;
+  const formData = new FormData();
+  formData.append('file', new Blob([JSON.stringify(data)], {type:'application/json'}), 'affinity.json');
+
+  try {
+    const res = await fetch(`/api/affinity/${appKey}`, { method:'POST', body: formData });
+    const result = await res.json();
+    if (!res.ok) {
+      alert('업로드 실패: ' + (result.error || '알 수 없는 오류'));
+      return;
+    }
+    affinityData = data;
+    affinityData.meta = affinityData.meta || {};
+    affinityData.meta.app_key = appKey;
+    affinityZoomed = null;
+    renderAffinity();
+  } catch(err) {
+    alert('업로드 오류: ' + err.message);
+  }
+}
+
+function validateAffinityClient(data) {
+  if (!data || typeof data !== 'object') return '최상위가 객체여야 합니다';
+  if (!Array.isArray(data.categories) || !data.categories.length) return 'categories 배열이 필요합니다';
+  for (let i = 0; i < data.categories.length; i++) {
+    const cat = data.categories[i];
+    if (!cat.label) return `categories[${i}].label이 필요합니다`;
+    if (!Array.isArray(cat.subcategories) || !cat.subcategories.length)
+      return `categories[${i}].subcategories 배열이 필요합니다`;
+    for (let j = 0; j < cat.subcategories.length; j++) {
+      const sub = cat.subcategories[j];
+      if (!sub.label) return `categories[${i}].subcategories[${j}].label이 필요합니다`;
+      if (!Array.isArray(sub.items)) return `categories[${i}].subcategories[${j}].items 배열이 필요합니다`;
+    }
+  }
+  return null;
+}
+
+// ── Render Affinity ──
+function renderAffinity() {
+  if (!affinityData) return showAffinityEmpty();
+
+  document.getElementById('p5-empty').style.display = 'none';
+  document.getElementById('p5-treemap').style.display = '';
+  document.getElementById('p5-summary').style.display = '';
+  document.getElementById('p5-breadcrumb').style.display = 'none';
+  document.getElementById('p5-legend').style.display = '';
+
+  renderAffinitySummary();
+  renderAffinityLegend();
+  renderVoronoiTreemap();
+}
+
+function renderAffinitySummary() {
+  const cats = affinityData.categories;
+  let totalReviews = 0, totalSubs = 0;
+  let sentCount = { positive:0, negative:0, neutral:0, mixed:0 };
+  cats.forEach(cat => {
+    (cat.subcategories || []).forEach(sub => {
+      totalSubs++;
+      const cnt = sub.items ? sub.items.length : (sub.count || 0);
+      totalReviews += cnt;
+      if (sub.sentiment && sentCount[sub.sentiment] !== undefined) sentCount[sub.sentiment] += cnt;
+    });
+  });
+
+  const sentHtml = Object.entries(sentCount)
+    .filter(([,v])=>v>0)
+    .map(([k,v])=>{
+      const labels = {positive:'긍정',negative:'부정',neutral:'중립',mixed:'혼합'};
+      const colors = {positive:'var(--status-positive)',negative:'var(--status-negative)',neutral:'var(--label-assistive)',mixed:'var(--status-cautionary)'};
+      return `<span style="color:${colors[k]}">${labels[k]} ${Math.round(v/totalReviews*100)}%</span>`;
+    }).join(' · ');
+
+  const meta = affinityData.meta || {};
+  let analyzedStr = '';
+  if (meta.analyzed_at) {
+    try {
+      const d = new Date(meta.analyzed_at);
+      analyzedStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    } catch(e) { analyzedStr = meta.analyzed_at; }
+  }
+
+  document.getElementById('p5-summary').innerHTML = `
+    <div class="card card-sm"><div class="card-title">총 리뷰</div><div class="kpi-value">${totalReviews.toLocaleString()}</div></div>
+    <div class="card card-sm"><div class="card-title">대분류</div><div class="kpi-value">${cats.length}</div></div>
+    <div class="card card-sm"><div class="card-title">소분류</div><div class="kpi-value">${totalSubs}</div></div>
+    <div class="card card-sm"><div class="card-title">감성 분포</div><div class="kpi-sub" style="margin-top:6px">${sentHtml || '-'}</div>
+      ${analyzedStr ? `<div class="kpi-sub" style="margin-top:4px;font-size:11px;color:var(--label-assistive)">분석: ${analyzedStr}</div>` : ''}</div>`;
+}
+
+function renderAffinityLegend() {
+  const cats = affinityData.categories;
+  document.getElementById('p5-legend').innerHTML = cats.map((cat, i) =>
+    `<div class="affinity-legend-item"><div class="dot" style="background:${AFFINITY_COLORS[i % AFFINITY_COLORS.length]}"></div>${cat.label}</div>`
+  ).join('');
+}
+
+// ── Voronoi Treemap Core ──
+function renderVoronoiTreemap() {
+  const container = document.getElementById('p5-treemap');
+  container.innerHTML = '';
+
+  const W = container.clientWidth || 900;
+  const H = Math.max(500, Math.min(700, W * 0.55));
+
+  // Build hierarchy
+  let rootChildren;
+  if (affinityZoomed !== null) {
+    const cat = affinityData.categories[affinityZoomed];
+    rootChildren = (cat.subcategories || []).map(sub => ({
+      name: sub.label,
+      sentiment: sub.sentiment,
+      catIndex: affinityZoomed,
+      items: sub.items || [],
+      value: sub.items ? sub.items.length : (sub.count || 1)
+    }));
+    document.getElementById('p5-breadcrumb').style.display = '';
+    document.getElementById('p5-breadcrumb').innerHTML =
+      `<a onclick="affinityZoomOut()">전체</a><span class="sep">›</span><span>${cat.label}</span>`;
+  } else {
+    rootChildren = affinityData.categories.map((cat, ci) => ({
+      name: cat.label,
+      catIndex: ci,
+      children: (cat.subcategories || []).map(sub => ({
+        name: sub.label,
+        sentiment: sub.sentiment,
+        catIndex: ci,
+        items: sub.items || [],
+        value: sub.items ? sub.items.length : (sub.count || 1)
+      }))
+    }));
+    document.getElementById('p5-breadcrumb').style.display = 'none';
+  }
+
+  const root = d3.hierarchy({ name: 'root', children: rootChildren }).sum(d => d.value || 0);
+
+  if (root.value === 0) {
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--label-alt)">데이터가 비어 있습니다</div>';
+    return;
+  }
+
+  // Clipping polygon — fill entire card, no margin
+  const margin = 0;
+  const radius = 12;
+  const clipPoly = [];
+  const x0 = margin, y0 = margin, x1 = W - margin, y1 = H - margin;
+  const corners = [
+    { cx: x1 - radius, cy: y0 + radius, startAngle: -Math.PI/2, endAngle: 0 },
+    { cx: x1 - radius, cy: y1 - radius, startAngle: 0, endAngle: Math.PI/2 },
+    { cx: x0 + radius, cy: y1 - radius, startAngle: Math.PI/2, endAngle: Math.PI },
+    { cx: x0 + radius, cy: y0 + radius, startAngle: Math.PI, endAngle: 3*Math.PI/2 },
+  ];
+  const stepsPerCorner = 12;
+  corners.forEach(c => {
+    for (let i = 0; i <= stepsPerCorner; i++) {
+      const a = c.startAngle + (c.endAngle - c.startAngle) * i / stepsPerCorner;
+      clipPoly.push([c.cx + radius * Math.cos(a), c.cy + radius * Math.sin(a)]);
+    }
+  });
+
+  // Compute voronoi treemap
+  // Seeded PRNG for consistent layout
+  function seededRandom(seed) {
+    let s = seed;
+    return function() { s = (s * 16807 + 0) % 2147483647; return (s - 1) / 2147483646; };
+  }
+  const prng = seededRandom(affinityZoomed !== null ? affinityZoomed + 42 : 42);
+  const voronoi = d3.voronoiTreemap().clip(clipPoly).convergenceRatio(0.001).maxIterationCount(100).minWeightRatio(0.01).prng(prng);
+
+  try {
+    voronoi(root);
+  } catch(e) {
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--label-alt)">트리맵 계산 오류</div>';
+    return;
+  }
+
+  // Create SVG
+  const svg = d3.select(container).append('svg')
+    .attr('width', W).attr('height', H)
+    .attr('viewBox', `0 0 ${W} ${H}`);
+
+  const tooltip = document.getElementById('affinity-tooltip');
+  const leaves = root.leaves();
+  const allNodes = root.descendants().filter(d => d.depth > 0);
+
+  // Sentiment-based fill opacity
+  function getFill(d) {
+    const baseColor = AFFINITY_COLORS[d.data.catIndex % AFFINITY_COLORS.length];
+    const sent = d.data.sentiment || 'neutral';
+    if (sent === 'negative') return d3.color(baseColor).darker(0.3).toString();
+    if (sent === 'positive') return d3.color(baseColor).brighter(0.2).toString();
+    if (sent === 'mixed') return d3.color(baseColor).darker(0.1).toString();
+    return baseColor;
+  }
+
+  // Draw leaf cells
+  leaves.forEach(leaf => {
+    if (!leaf.polygon || leaf.polygon.length < 3) return;
+    const poly = leaf.polygon;
+    svg.append('polygon')
+      .attr('class', 'voronoi-cell')
+      .attr('points', poly.map(p => p.join(',')).join(' '))
+      .attr('fill', getFill(leaf))
+      .on('mousemove', (event) => showAffinityTooltip(event, leaf))
+      .on('mouseleave', () => hideAffinityTooltip())
+      .on('click', () => {
+        if (affinityZoomed === null && leaf.parent && leaf.parent.data.catIndex !== undefined && leaf.parent.children) {
+          affinityZoomIn(leaf.data.catIndex);
+        } else {
+          openAffinityDetail(leaf.data);
+        }
+      });
+  });
+
+  // Draw category borders (depth 1)
+  if (affinityZoomed === null) {
+    root.children.forEach(cat => {
+      if (!cat.polygon || cat.polygon.length < 3) return;
+      svg.append('polygon')
+        .attr('class', 'voronoi-cat-border')
+        .attr('points', cat.polygon.map(p => p.join(',')).join(' '));
+    });
+  }
+
+  // Labels
+  allNodes.forEach(node => {
+    if (!node.polygon || node.polygon.length < 3) return;
+    const centroid = d3.polygonCentroid(node.polygon);
+    if (!centroid || isNaN(centroid[0])) return;
+
+    const area = Math.abs(d3.polygonArea(node.polygon));
+    const totalArea = W * H;
+    const areaPct = area / totalArea;
+
+    // Skip label if too small
+    if (areaPct < 0.015) return;
+
+    const isCategory = node.depth === 1 && affinityZoomed === null;
+    const itemCount = node.value || 0;
+
+    if (isCategory) {
+      const fontSize = Math.max(11, Math.min(16, Math.sqrt(areaPct) * 60));
+      svg.append('text')
+        .attr('class', 'voronoi-label')
+        .attr('x', centroid[0]).attr('y', centroid[1] - 4)
+        .attr('text-anchor', 'middle')
+        .attr('font-size', fontSize + 'px')
+        .text(node.data.name);
+      svg.append('text')
+        .attr('class', 'voronoi-count')
+        .attr('x', centroid[0]).attr('y', centroid[1] + 12)
+        .attr('text-anchor', 'middle')
+        .text(itemCount.toLocaleString() + '건');
+    } else if (node.children === undefined) {
+      // Leaf (subcategory)
+      const fontSize = Math.max(10, Math.min(14, Math.sqrt(areaPct) * 50));
+      if (areaPct > 0.025) {
+        svg.append('text')
+          .attr('class', 'voronoi-label-sub')
+          .attr('x', centroid[0]).attr('y', centroid[1] - 2)
+          .attr('text-anchor', 'middle')
+          .attr('font-size', fontSize + 'px')
+          .text(node.data.name);
+        svg.append('text')
+          .attr('class', 'voronoi-count')
+          .attr('x', centroid[0]).attr('y', centroid[1] + 12)
+          .attr('text-anchor', 'middle')
+          .text(itemCount.toLocaleString() + '건');
+      }
+    }
+  });
+}
+
+function affinityZoomIn(catIndex) {
+  affinityZoomed = catIndex;
+  history.pushState({ affinityZoom: catIndex }, '');
+  renderVoronoiTreemap();
+}
+
+function affinityZoomOut() {
+  affinityZoomed = null;
+  renderVoronoiTreemap();
+}
+
+window.addEventListener('popstate', function(e) {
+  if (affinityZoomed !== null) {
+    affinityZoomed = null;
+    renderVoronoiTreemap();
+  }
+});
+
+// ── Tooltip ──
+function showAffinityTooltip(event, node) {
+  const tt = document.getElementById('affinity-tooltip');
+  const d = node.data;
+  const items = d.items || [];
+  const avgRating = items.length ? (items.reduce((s,r)=>s+(r.rating||0),0)/items.length).toFixed(1) : '-';
+  const sentLabels = {positive:'긍정',negative:'부정',neutral:'중립',mixed:'혼합'};
+
+  let previews = items.slice(0, 3).map(r =>
+    `<div class="tt-preview-item">${esc((r.text||'').substring(0, 60))}</div>`
+  ).join('');
+
+  const catName = affinityData.categories[d.catIndex]?.label || '';
+
+  tt.innerHTML = `
+    <div class="tt-label">${esc(d.name)}</div>
+    <div class="tt-cat">${esc(catName)}</div>
+    <div class="tt-stats">
+      <span>리뷰 <strong>${items.length}건</strong></span>
+      <span>평균 <strong>${avgRating}점</strong></span>
+      ${d.sentiment ? `<span>${sentLabels[d.sentiment]||d.sentiment}</span>` : ''}
+    </div>
+    ${previews ? `<div class="tt-preview">${previews}</div>` : ''}`;
+
+  tt.classList.add('visible');
+  const x = Math.min(event.clientX + 12, window.innerWidth - 340);
+  const y = Math.min(event.clientY + 12, window.innerHeight - tt.offsetHeight - 10);
+  tt.style.left = x + 'px';
+  tt.style.top = y + 'px';
+}
+
+function hideAffinityTooltip() {
+  document.getElementById('affinity-tooltip').classList.remove('visible');
+}
+
+// ── Detail Panel ──
+function openAffinityDetail(data) {
+  const panel = document.getElementById('affinity-detail');
+  const overlay = document.getElementById('affinity-overlay');
+  const body = document.getElementById('affinity-detail-body');
+  const title = document.getElementById('affinity-detail-title');
+
+  title.textContent = data.name + ` (${(data.items||[]).length}건)`;
+
+  const items = data.items || [];
+  if (!items.length) {
+    body.innerHTML = '<div style="padding:40px;text-align:center;color:var(--label-alt)">리뷰 없음</div>';
+  } else {
+    body.innerHTML = items.map(r => {
+      const score = r.rating || 0;
+      const stars = '★'.repeat(score) + '☆'.repeat(5 - score);
+      return `<div class="review-item">
+        <div class="meta">
+          <span class="stars">${stars}</span>
+          <span>${esc((r.date||'').substring(0,10))}</span>
+        </div>
+        <div class="text">${esc(r.text||'')}</div>
+      </div>`;
+    }).join('');
+  }
+
+  panel.classList.add('open');
+  overlay.classList.add('open');
+  hideAffinityTooltip();
+}
+
+function closeAffinityDetail() {
+  document.getElementById('affinity-detail').classList.remove('open');
+  document.getElementById('affinity-overlay').classList.remove('open');
+}
 </script>
 </body>
 </html>
