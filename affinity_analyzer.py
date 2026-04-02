@@ -97,160 +97,46 @@ def preprocess(reviews: list[dict]) -> list[dict]:
 
 
 # ────────────────────────────────────────
-# ② 임베딩 (Gemini gemini-embedding-001)
+# ② 로컬 임베딩 (sentence-transformers)
 # ────────────────────────────────────────
 
-EMBED_BATCH_SIZE = 100   # 배치당 텍스트 수
-MAX_RETRIES = 3          # 배치당 최대 재시도
-
-# Gemini 무료 한도 기준
-LIMIT_RPM = 100          # 분당 요청 수
-LIMIT_TPM = 30000        # 분당 토큰 수
-LIMIT_RPD = 1000         # 일 요청 수
-TPM_SAFETY = 0.85        # TPM 안전 마진 (85%까지만 사용)
-AVG_TOKENS_PER_REVIEW = 40  # 한국어 리뷰 평균 토큰 수 추정
+LOCAL_EMBED_MODEL = "jhgan/ko-sroberta-multitask"
+_local_model = None
 
 
-def _call_embed_with_key(batch: list[str], api_key: str):
-    """특정 키로 임베딩 호출"""
-    genai.configure(api_key=api_key)
-    result = genai.embed_content(
-        model="models/gemini-embedding-001",
-        content=batch,
-        task_type="CLUSTERING",
-    )
-    return result["embedding"]
-
-
-def embed_reviews(reviews: list[dict], on_progress=None) -> np.ndarray:
-    """
-    Gemini 임베딩 — TPM 기반 페이싱 + 키 로테이션
-
-    한도: RPM=100, TPM=30,000, RPD=1,000
-    실제 병목은 TPM → 분당 ~7배치(100건×40토큰)로 자동 조절
-    429 발생 시에만 다음 키로 전환
-    """
-    texts = [r["text"] for r in reviews]
-    all_embeddings = []
-    total_batches = (len(texts) + EMBED_BATCH_SIZE - 1) // EMBED_BATCH_SIZE
-    num_keys = len(_api_keys)
-    dead_keys = set()       # 일일 한도(RPD) 소진된 키
-    succeeded_keys = set()  # 한 번이라도 성공한 키
-    current_key = 0         # 현재 사용 중인 키 인덱스
-
-    # TPM 페이싱: 분당 토큰 추적
-    minute_start = time.time()
-    tokens_this_minute = 0
-    requests_this_minute = 0
-    tpm_limit = int(LIMIT_TPM * TPM_SAFETY)
-
-    def _next_alive_key():
-        """다음 살아있는 키 반환, 없으면 None"""
-        nonlocal current_key
-        for _ in range(num_keys):
-            current_key = (current_key + 1) % num_keys
-            if current_key not in dead_keys:
-                return current_key
-        return None
-
-    def _wait_for_tpm_reset(estimated_tokens, on_progress):
-        """TPM 한도 도달 시 분 초기화까지 대기"""
-        nonlocal minute_start, tokens_this_minute, requests_this_minute
-
-        elapsed = time.time() - minute_start
-        if elapsed >= 60:
-            # 1분 지남 → 카운터 리셋
-            minute_start = time.time()
-            tokens_this_minute = 0
-            requests_this_minute = 0
-            return
-
-        if tokens_this_minute + estimated_tokens > tpm_limit or requests_this_minute >= LIMIT_RPM:
-            wait = 61 - elapsed
-            if on_progress:
-                on_progress(f"TPM 한도 대기 중... ({int(wait)}초)")
-            time.sleep(wait)
-            minute_start = time.time()
-            tokens_this_minute = 0
-            requests_this_minute = 0
-
-    for i in range(0, len(texts), EMBED_BATCH_SIZE):
-        batch = texts[i:i + EMBED_BATCH_SIZE]
-        batch_num = i // EMBED_BATCH_SIZE + 1
-        estimated_tokens = len(batch) * AVG_TOKENS_PER_REVIEW
-        success = False
-
-        # TPM 페이싱
-        _wait_for_tpm_reset(estimated_tokens, on_progress)
-
-        for attempt in range(1, MAX_RETRIES + 1):
-            # 살아있는 키 전부 순회 시도
-            alive_keys = [k for k in range(num_keys) if k not in dead_keys]
-            if not alive_keys:
-                raise RuntimeError(f"API 키 {num_keys}개 모두 소진. 잠시 후 다시 시도해주세요.")
-
-            # current_key부터 시작하는 순서로 정렬
-            start = alive_keys.index(current_key) if current_key in alive_keys else 0
-            ordered_keys = alive_keys[start:] + alive_keys[:start]
-
-            for key_idx in ordered_keys:
-                try:
-                    embeddings = _call_embed_with_key(batch, _api_keys[key_idx])
-                    all_embeddings.extend(embeddings)
-                    succeeded_keys.add(key_idx)
-                    current_key = key_idx
-                    tokens_this_minute += estimated_tokens
-                    requests_this_minute += 1
-                    success = True
-                    break
-                except Exception as e:
-                    err_str = str(e)
-                    is_quota = "429" in err_str or "ResourceExhausted" in type(e).__name__
-                    is_auth = "403" in err_str or "401" in err_str
-
-                    if is_auth:
-                        dead_keys.add(key_idx)
-                        if on_progress:
-                            on_progress(f"키 {key_idx+1} 인증 오류 → 제외")
-                        continue
-
-                    if is_quota:
-                        if key_idx not in succeeded_keys:
-                            dead_keys.add(key_idx)
-                            if on_progress:
-                                on_progress(f"키 {key_idx+1} 일일 한도 소진 → 제외")
-                        # 다음 키 시도
-                        continue
-
-                    # 기타 오류
-                    if on_progress:
-                        on_progress(f"임베딩 오류 (배치 {batch_num}): {type(e).__name__}: {str(e)[:100]}")
-                    break
-
-            if success:
-                break
-
-            # 모든 키 429 → TPM 대기 후 재시도
-            alive = num_keys - len(dead_keys)
-            if alive == 0:
-                raise RuntimeError(f"API 키 {num_keys}개 모두 소진.")
-            if attempt < MAX_RETRIES:
-                _wait_for_tpm_reset(estimated_tokens, on_progress)
-            else:
-                time.sleep(3)
-
-        if not success:
-            raise RuntimeError(f"임베딩 실패: 배치 {batch_num}에서 {MAX_RETRIES}회 모두 실패.")
-
+def _get_local_model(on_progress=None):
+    """sentence-transformers 모델 lazy 로드 (최초 1회 다운로드)"""
+    global _local_model
+    if _local_model is None:
         if on_progress:
-            done = min(i + EMBED_BATCH_SIZE, len(texts))
-            on_progress(f"임베딩 {batch_num}/{total_batches} 완료 ({done}/{len(texts)}건)")
+            on_progress("로컬 임베딩 모델 로드 중... (최초 실행 시 ~500MB 다운로드)")
+        from sentence_transformers import SentenceTransformer
+        _local_model = SentenceTransformer(LOCAL_EMBED_MODEL)
+        if on_progress:
+            on_progress(f"모델 로드 완료: {LOCAL_EMBED_MODEL}")
+    return _local_model
 
-        # RPM 안전 딜레이 (매 요청 사이 2초)
-        if i + EMBED_BATCH_SIZE < len(texts):
-            time.sleep(2)
 
-    return np.array(all_embeddings)
+def embed_reviews_local(reviews: list[dict], on_progress=None, app_key=None, base_embeddings=None) -> np.ndarray:
+    """로컬 sentence-transformers 임베딩 — API 호출 없음, 한도 없음"""
+    texts = [r["text"] for r in reviews]
+    model = _get_local_model(on_progress)
+
+    if on_progress:
+        on_progress(f"로컬 임베딩 시작... ({len(texts)}건)")
+
+    embeddings = model.encode(texts, batch_size=64, show_progress_bar=False)
+
+    if on_progress:
+        on_progress(f"로컬 임베딩 완료: {embeddings.shape}")
+
+    if base_embeddings is not None:
+        embeddings = np.concatenate([base_embeddings, embeddings])
+
+    if app_key:
+        _save_embeddings(app_key, embeddings)
+
+    return embeddings
 
 
 # ────────────────────────────────────────
@@ -651,18 +537,26 @@ def _should_invalidate(cache, current_review_count):
 # 전체 파이프라인
 # ────────────────────────────────────────
 
-def run_affinity_pipeline(app_key: str, on_progress=None) -> dict:
+def run_affinity_pipeline(app_key: str, on_progress=None, user_api_key: str = None) -> dict:
     """
     앱 리뷰 어피니티 분석 파이프라인 (단계별 캐싱)
 
-    캐시된 단계는 건너뛰고, 실패했던 단계부터 재개.
-    새 리뷰 100건 이상이면 처음부터 다시 분석.
+    임베딩: 로컬 sentence-transformers (API 호출 없음)
+    라벨링: Gemini API (LLM)
     """
-    # .env에서 키 목록 매번 새로 읽기
+    # LLM 라벨링용 API 키 로딩
     global _api_keys, _current_key_idx
     load_dotenv(override=True)
     _api_keys = _load_api_keys()
     _current_key_idx = 0
+
+    if user_api_key:
+        if user_api_key in _api_keys:
+            _current_key_idx = _api_keys.index(user_api_key)
+        else:
+            _api_keys.insert(0, user_api_key)
+            _current_key_idx = 0
+
     _configure_genai()
 
     def log(msg):
@@ -713,7 +607,7 @@ def run_affinity_pipeline(app_key: str, on_progress=None) -> dict:
         cache["completed"] = ["preprocess"]
         _save_cache(app_key, cache)
 
-    # ② 임베딩
+    # ② 임베딩 (부분 캐시 지원 — 중간 실패 시 이어서 진행)
     embeddings = None
     if "embed" in completed:
         embeddings = _load_embeddings(app_key)
@@ -722,13 +616,39 @@ def run_affinity_pipeline(app_key: str, on_progress=None) -> dict:
         else:
             embeddings = None
 
+    # 부분 임베딩 캐시 확인
+    partial_embeddings = None
     if embeddings is None:
-        log("임베딩 시작...")
-        embeddings = embed_reviews(reviews, on_progress=log)
-        log(f"임베딩 완료: {embeddings.shape}")
-        _save_embeddings(app_key, embeddings)
-        cache["completed"] = ["preprocess", "embed"]
-        _save_cache(app_key, cache)
+        partial = _load_embeddings(app_key)
+        if partial is not None and 0 < len(partial) < len(reviews):
+            partial_embeddings = partial
+            log(f"부분 임베딩 캐시 발견: {len(partial)}/{len(reviews)}건 — 이어서 진행")
+
+    if embeddings is None:
+        start_idx = len(partial_embeddings) if partial_embeddings is not None else 0
+        remaining_reviews = reviews[start_idx:]
+        log(f"임베딩 {'재개' if start_idx > 0 else '시작'}... ({start_idx}/{len(reviews)}건 완료됨)")
+
+        try:
+            new_embeddings = embed_reviews_local(
+                remaining_reviews, on_progress=log,
+                app_key=app_key, base_embeddings=partial_embeddings,
+            )
+            if partial_embeddings is not None:
+                embeddings = np.concatenate([partial_embeddings, new_embeddings])
+            else:
+                embeddings = new_embeddings
+            log(f"임베딩 완료: {embeddings.shape}")
+            _save_embeddings(app_key, embeddings)
+            cache["completed"] = ["preprocess", "embed"]
+            _save_cache(app_key, cache)
+        except Exception as e:
+            # 실패해도 지금까지 진행분 저장
+            if partial_embeddings is not None or start_idx == 0:
+                # embed_reviews 내부에서 all_embeddings에 부분 결과가 있을 수 있지만
+                # 함수가 예외를 던지면 접근 불가 → 기존 partial만 유지
+                pass
+            raise
 
     # ③ 1차 클러스터링
     if "cluster_primary" in completed and cache.get("primary_labels"):

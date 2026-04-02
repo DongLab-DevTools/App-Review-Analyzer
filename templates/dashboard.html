@@ -238,21 +238,43 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
 .affinity-breadcrumb a{color:var(--primary);cursor:pointer;text-decoration:none}
 .affinity-breadcrumb a:hover{text-decoration:underline}
 .affinity-breadcrumb .sep{color:var(--label-assistive)}
-.affinity-container{position:relative;width:100%;background:var(--bg-normal);border-radius:12px;box-shadow:inset 0 0 0 1px var(--line-normal);overflow:hidden;line-height:0}
-.affinity-container svg{display:block;width:100%;height:auto}
+
+/* 2컬럼 레이아웃: 트리맵(좌) + 카테고리 리스트(우) */
+.affinity-layout{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
+@media(max-width:991px){.affinity-layout{grid-template-columns:1fr}}
+
+.affinity-container{position:relative;width:100%;background:var(--bg-normal);border-radius:8px;box-shadow:inset 0 0 0 1px var(--line-normal);overflow:hidden;line-height:0}
+.affinity-container svg{display:block;width:100%;height:auto;max-height:65vh}
 .affinity-container .voronoi-cell{stroke:var(--bg-normal);stroke-width:2;cursor:pointer;transition:opacity .15s ease}
 .affinity-container .voronoi-cell:hover{opacity:0.85}
 .affinity-container .voronoi-cat-border{fill:none;stroke:var(--label-assistive);stroke-width:2.5;pointer-events:none}
-.affinity-container .voronoi-label{pointer-events:none;font-family:var(--font-family);font-weight:600;fill:var(--label-normal)}
-.affinity-container .voronoi-label-sub{pointer-events:none;font-family:var(--font-family);font-weight:500;fill:rgba(23,23,25,0.7)}
-.affinity-container .voronoi-count{pointer-events:none;font-family:var(--font-family);font-weight:500;fill:rgba(23,23,25,0.45);font-size:11px}
+.affinity-container .voronoi-label{pointer-events:none;font-family:var(--font-family);font-weight:700;fill:#171719;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
+.affinity-container .voronoi-label-sub{pointer-events:none;font-family:var(--font-family);font-weight:600;fill:rgba(23,23,25,0.85);paint-order:stroke;stroke:rgba(255,255,255,0.8);stroke-width:2.5px;stroke-linejoin:round}
+.affinity-container .voronoi-count{pointer-events:none;font-family:var(--font-family);font-weight:500;fill:rgba(23,23,25,0.5);font-size:11px;paint-order:stroke;stroke:rgba(255,255,255,0.7);stroke-width:2px;stroke-linejoin:round}
+
+/* 우측 카테고리 패널 */
+.affinity-sidebar{background:var(--bg-normal);border-radius:8px;box-shadow:inset 0 0 0 1px var(--line-normal);overflow:hidden}
+.affinity-sidebar-header{padding:16px 20px 12px;font-size:13px;font-weight:600;letter-spacing:0.02em;color:var(--label-alt);text-transform:uppercase}
+.affinity-cat-item{padding:12px 20px;display:flex;align-items:center;gap:10px;cursor:pointer;position:relative;overflow:hidden;transition:background .15s ease}
+.affinity-cat-item::after{content:'';position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .15s ease;pointer-events:none}
+.affinity-cat-item:hover::after{opacity:0.0375}
+.affinity-cat-item:not(:last-child){box-shadow:inset 0 -1px 0 0 var(--line-alt)}
+.affinity-cat-item .dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.affinity-cat-item .cat-info{flex:1;min-width:0}
+.affinity-cat-item .cat-label{font-size:14px;font-weight:600;color:var(--label-normal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.affinity-cat-item .cat-desc{font-size:12px;color:var(--label-alt);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.affinity-cat-item .cat-count{font-size:13px;font-weight:600;color:var(--label-alt);flex-shrink:0}
+
+.affinity-zoom-out-btn{position:absolute;top:12px;left:12px;z-index:10;display:flex;align-items:center;gap:6px;padding:6px 14px;font-size:13px;font-weight:600;font-family:var(--font-family);color:var(--label-normal);background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:none;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.08),inset 0 0 0 1px var(--line-normal);cursor:pointer;transition:all .15s ease}
+.affinity-zoom-out-btn:hover{background:rgba(255,255,255,1);box-shadow:0 4px 12px rgba(0,0,0,0.12),inset 0 0 0 1px var(--line-normal)}
+.affinity-zoom-out-btn:active{transform:scale(0.97)}
 
 .affinity-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.affinity-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;padding:12px 16px}
+.affinity-legend{display:flex;flex-wrap:wrap;gap:10px;padding:12px 16px;background:var(--bg-normal);border-radius:0 0 8px 8px;box-shadow:inset 0 0 0 1px var(--line-normal);margin-top:-1px}
 .affinity-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--label-alt)}
 .affinity-legend-item .dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
 
-.affinity-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px;text-align:center}
+.affinity-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px;text-align:center;min-height:calc(100vh - 300px)}
 .affinity-empty-icon{width:64px;height:64px;border-radius:16px;background:var(--fill-normal);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
 .affinity-empty h3{font-size:16px;font-weight:600;margin-bottom:8px}
 .affinity-empty p{font-size:14px;color:var(--label-alt);max-width:400px;line-height:22px;margin-bottom:24px}
@@ -597,15 +619,6 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M4 7l4 4 4-4M3 13h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
         리뷰 텍스트
       </button>
-      <button class="btn btn-outline btn-sm" onclick="showAffinitySchema()">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 2h5l4 4v8H4V2z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 2v4h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        JSON 스키마
-      </button>
-      <label class="btn btn-primary btn-sm" style="cursor:pointer">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 10v3h12v-3M8 2v8M5 7l3 3 3-3" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        JSON 업로드
-        <input type="file" accept=".json" style="display:none" onchange="handleAffinityUpload(event)">
-      </label>
     </div>
   </div>
 
@@ -617,11 +630,20 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
     <a onclick="affinityZoomOut()">전체</a>
   </div>
 
-  <!-- Treemap container -->
-  <div class="affinity-container" id="p5-treemap" style="display:none"></div>
-
-  <!-- Legend -->
-  <div class="affinity-legend" id="p5-legend" style="display:none"></div>
+  <!-- 2컬럼: 트리맵 + 카테고리 사이드바 -->
+  <div class="affinity-layout" id="p5-layout" style="display:none">
+    <div>
+      <div style="position:relative">
+        <div class="affinity-container" id="p5-treemap"></div>
+        <button class="affinity-zoom-out-btn" id="p5-zoom-out" style="display:none" onclick="affinityZoomOut()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L5 7l3.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          전체 맵으로 돌아가기
+        </button>
+      </div>
+      <div class="affinity-legend" id="p5-legend"></div>
+    </div>
+    <div class="affinity-sidebar" id="p5-sidebar"></div>
+  </div>
 
   <!-- Empty state -->
   <div class="affinity-empty" id="p5-empty">
@@ -629,14 +651,11 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="8" stroke="var(--label-assistive)" stroke-width="1.5"/><circle cx="11" cy="12" r="2.5" stroke="var(--label-assistive)" stroke-width="1.2"/><circle cx="17.5" cy="11" r="1.8" stroke="var(--label-assistive)" stroke-width="1.2"/><circle cx="14.5" cy="17" r="2" stroke="var(--label-assistive)" stroke-width="1.2"/></svg>
     </div>
     <h3>어피니티 분석 결과가 없습니다</h3>
-    <p>리뷰 데이터를 AI(Claude, ChatGPT 등)로 분석한 뒤 결과 JSON을 업로드하면 보로노이 트리맵으로 시각화됩니다.</p>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-outline btn-sm" onclick="showAffinitySchema()">JSON 스키마 확인</button>
-      <label class="btn btn-primary btn-sm" style="cursor:pointer">
-        JSON 업로드
-        <input type="file" accept=".json" style="display:none" onchange="handleAffinityUpload(event)">
-      </label>
-    </div>
+    <p>리뷰를 클러스터링하여 보로노이 트리맵으로 시각화합니다.</p>
+    <button class="btn btn-primary btn-sm" onclick="startAutoAffinity()" style="gap:6px">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8l3.5-3.5M3 8l3.5 3.5M13 8l-3.5-3.5M13 8l-3.5 3.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      분석 시작
+    </button>
   </div>
 </section>
 
@@ -694,27 +713,6 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
   </div>
 </div>
 
-<!-- Schema Modal -->
-<div class="modal-overlay" id="schema-modal" style="display:none" onclick="if(event.target===this)closeSchemaModal()">
-  <div class="modal" style="width:600px">
-    <div class="modal-header">
-      <span class="modal-title">결과 JSON 스키마</span>
-      <button class="btn btn-ghost btn-sm" onclick="closeSchemaModal()" style="width:32px;padding:0">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </button>
-    </div>
-    <div class="modal-body" style="gap:8px">
-      <p style="font-size:13px;color:var(--label-alt);line-height:20px">AI(Claude, ChatGPT 등)에 리뷰 데이터와 함께 아래 스키마를 전달하면 결과 JSON을 생성할 수 있습니다.</p>
-      <div style="background:var(--bg-alt);border-radius:8px;padding:16px;box-shadow:inset 0 0 0 1px var(--line-alt);flex:1;overflow:hidden;display:flex;flex-direction:column">
-        <pre id="schema-modal-pre" style="font-family:'SF Mono',Menlo,monospace;font-size:11px;line-height:16px;color:var(--label-neutral);white-space:pre-wrap;overflow-y:auto;flex:1"></pre>
-      </div>
-    </div>
-    <div class="modal-footer" style="gap:8px">
-      <button class="btn btn-outline btn-sm" id="schema-copy-btn" onclick="copySchema()">복사</button>
-      <button class="btn btn-primary btn-sm" onclick="closeSchemaModal()">확인</button>
-    </div>
-  </div>
-</div>
 
 <!-- Refresh Modal -->
 <div class="modal-overlay" id="refresh-modal" style="display:none">
@@ -1293,17 +1291,6 @@ function esc(s){const d=document.createElement('div');d.textContent=s;return d.i
 // P5. 어피니티 분석 (Voronoi Treemap)
 // ═══════════════════════════════════
 
-const AFFINITY_SCHEMA = {
-  meta: { app_name: "앱 이름", platform: "playstore | appstore | all", total_reviews: 2847, analyzed_at: "2026-03-31T12:00:00Z" },
-  categories: [{
-    label: "대분류 라벨", description: "이 카테고리에 대한 한 줄 설명",
-    subcategories: [{
-      label: "소분류 라벨", sentiment: "positive | negative | neutral | mixed", count: 15,
-      items: [{ text: "원본 리뷰 텍스트", rating: 4, date: "2026-03-15" }]
-    }]
-  }]
-};
-
 const AFFINITY_COLORS = [
   '#7EB3FF','#7EDBA6','#FFc98A','#FF9A9A','#C4B5FD',
   '#93C5FD','#86EFAC','#FDE68A','#FCA5A5','#DDD6FE',
@@ -1343,19 +1330,9 @@ async function loadAffinityData(appKey) {
 function showAffinityEmpty() {
   affinityData = null;
   document.getElementById('p5-empty').style.display = '';
-  document.getElementById('p5-treemap').style.display = 'none';
+  document.getElementById('p5-layout').style.display = 'none';
   document.getElementById('p5-summary').style.display = 'none';
   document.getElementById('p5-breadcrumb').style.display = 'none';
-  document.getElementById('p5-legend').style.display = 'none';
-}
-
-function showAffinitySchema() {
-  document.getElementById('schema-modal-pre').textContent = JSON.stringify(AFFINITY_SCHEMA, null, 2);
-  document.getElementById('schema-modal').style.display = 'flex';
-}
-
-function closeSchemaModal() {
-  document.getElementById('schema-modal').style.display = 'none';
 }
 
 // ── Auto Affinity Analysis ──
@@ -1570,86 +1547,38 @@ function downloadAffinityText() {
   window.location.href = `/api/affinity-text/${key}`;
 }
 
-function copySchema() {
-  navigator.clipboard.writeText(JSON.stringify(AFFINITY_SCHEMA, null, 2));
-  const btn = document.getElementById('schema-copy-btn');
-  btn.textContent = '복사됨!';
-  setTimeout(() => { btn.textContent = '복사'; }, 1500);
-}
-
-// ── JSON Upload ──
-async function handleAffinityUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  e.target.value = '';
-
-  let data;
-  try {
-    const text = await file.text();
-    data = JSON.parse(text);
-  } catch(err) {
-    alert('JSON 파싱 실패: ' + err.message);
-    return;
-  }
-
-  // Client-side validation
-  const err = validateAffinityClient(data);
-  if (err) {
-    alert('유효성 오류: ' + err);
-    return;
-  }
-
-  const appKey = document.getElementById('p3-app-select').value;
-  const formData = new FormData();
-  formData.append('file', new Blob([JSON.stringify(data)], {type:'application/json'}), 'affinity.json');
-
-  try {
-    const res = await fetch(`/api/affinity/${appKey}`, { method:'POST', body: formData });
-    const result = await res.json();
-    if (!res.ok) {
-      alert('업로드 실패: ' + (result.error || '알 수 없는 오류'));
-      return;
-    }
-    affinityData = data;
-    affinityData.meta = affinityData.meta || {};
-    affinityData.meta.app_key = appKey;
-    affinityZoomed = null;
-    renderAffinity();
-  } catch(err) {
-    alert('업로드 오류: ' + err.message);
-  }
-}
-
-function validateAffinityClient(data) {
-  if (!data || typeof data !== 'object') return '최상위가 객체여야 합니다';
-  if (!Array.isArray(data.categories) || !data.categories.length) return 'categories 배열이 필요합니다';
-  for (let i = 0; i < data.categories.length; i++) {
-    const cat = data.categories[i];
-    if (!cat.label) return `categories[${i}].label이 필요합니다`;
-    if (!Array.isArray(cat.subcategories) || !cat.subcategories.length)
-      return `categories[${i}].subcategories 배열이 필요합니다`;
-    for (let j = 0; j < cat.subcategories.length; j++) {
-      const sub = cat.subcategories[j];
-      if (!sub.label) return `categories[${i}].subcategories[${j}].label이 필요합니다`;
-      if (!Array.isArray(sub.items)) return `categories[${i}].subcategories[${j}].items 배열이 필요합니다`;
-    }
-  }
-  return null;
-}
 
 // ── Render Affinity ──
 function renderAffinity() {
   if (!affinityData) return showAffinityEmpty();
 
   document.getElementById('p5-empty').style.display = 'none';
-  document.getElementById('p5-treemap').style.display = '';
+  document.getElementById('p5-layout').style.display = '';
   document.getElementById('p5-summary').style.display = '';
   document.getElementById('p5-breadcrumb').style.display = 'none';
-  document.getElementById('p5-legend').style.display = '';
 
   renderAffinitySummary();
   renderAffinityLegend();
+  renderAffinitySidebar();
   renderVoronoiTreemap();
+}
+
+function renderAffinitySidebar() {
+  const cats = affinityData.categories;
+  let html = '<div class="affinity-sidebar-header">카테고리</div>';
+  cats.forEach((cat, i) => {
+    const count = (cat.subcategories || []).reduce((s, sub) => s + (sub.items ? sub.items.length : (sub.count || 0)), 0);
+    const color = AFFINITY_COLORS[i % AFFINITY_COLORS.length];
+    html += `<div class="affinity-cat-item" onclick="affinityZoomIn(${i})">
+      <div class="dot" style="background:${color}"></div>
+      <div class="cat-info">
+        <div class="cat-label">${cat.label}</div>
+        ${cat.description ? `<div class="cat-desc">${cat.description}</div>` : ''}
+      </div>
+      <div class="cat-count">${count}건</div>
+    </div>`;
+  });
+  document.getElementById('p5-sidebar').innerHTML = html;
 }
 
 function renderAffinitySummary() {
@@ -1841,7 +1770,7 @@ function renderVoronoiTreemap() {
     const itemCount = node.value || 0;
 
     if (isCategory) {
-      const fontSize = Math.max(11, Math.min(16, Math.sqrt(areaPct) * 60));
+      const fontSize = Math.max(12, Math.min(18, Math.sqrt(areaPct) * 65));
       svg.append('text')
         .attr('class', 'voronoi-label')
         .attr('x', centroid[0]).attr('y', centroid[1] - 4)
@@ -1855,7 +1784,7 @@ function renderVoronoiTreemap() {
         .text(itemCount.toLocaleString() + '건');
     } else if (node.children === undefined) {
       // Leaf (subcategory)
-      const fontSize = Math.max(10, Math.min(14, Math.sqrt(areaPct) * 50));
+      const fontSize = Math.max(11, Math.min(15, Math.sqrt(areaPct) * 55));
       if (areaPct > 0.025) {
         svg.append('text')
           .attr('class', 'voronoi-label-sub')
@@ -1876,11 +1805,13 @@ function renderVoronoiTreemap() {
 function affinityZoomIn(catIndex) {
   affinityZoomed = catIndex;
   history.pushState({ affinityZoom: catIndex }, '');
+  document.getElementById('p5-zoom-out').style.display = '';
   renderVoronoiTreemap();
 }
 
 function affinityZoomOut() {
   affinityZoomed = null;
+  document.getElementById('p5-zoom-out').style.display = 'none';
   renderVoronoiTreemap();
 }
 
