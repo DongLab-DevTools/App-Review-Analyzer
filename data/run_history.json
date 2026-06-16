@@ -1,0 +1,126 @@
+[
+  {
+    "started_at": "2026-06-15T17:00:36.804915",
+    "finished_at": "2026-06-15T17:21:21.150152",
+    "duration_sec": 1244.3,
+    "trigger": "manual",
+    "status": "success",
+    "apps": [
+      {
+        "key": "tving",
+        "name": "티빙",
+        "collect": {
+          "new": 1,
+          "total": 2526,
+          "ok": true,
+          "error": null
+        },
+        "affinity": {
+          "ran": true,
+          "categories": 20,
+          "ok": true,
+          "complete": false,
+          "note": "한도 추정 — 분류 미완료, 라벨 폴백, 병합 보류 (다음 실행 시 재개)",
+          "error": null
+        }
+      },
+      {
+        "key": "netflix",
+        "name": "넷플릭스",
+        "collect": {
+          "new": 0,
+          "total": 2501,
+          "ok": true,
+          "error": null
+        },
+        "affinity": {
+          "ran": false,
+          "categories": 18,
+          "ok": true,
+          "complete": false,
+          "note": "한도 추정 — 분류 미완료, 라벨 폴백, 병합 보류 (다음 실행 시 재개)",
+          "error": null
+        }
+      },
+      {
+        "key": "wavve",
+        "name": "웨이브",
+        "collect": {
+          "new": 0,
+          "total": 2500,
+          "ok": true,
+          "error": null
+        },
+        "affinity": {
+          "ran": false,
+          "categories": 22,
+          "ok": true,
+          "complete": false,
+          "note": "한도 추정 — 분류 미완료, 라벨 폴백, 병합 보류 (다음 실행 시 재개)",
+          "error": null
+        }
+      },
+      {
+        "key": "watcha",
+        "name": "왓챠",
+        "collect": {
+          "new": 0,
+          "total": 2500,
+          "ok": true,
+          "error": null
+        },
+        "affinity": {
+          "ran": false,
+          "categories": 26,
+          "ok": true,
+          "complete": false,
+          "note": "한도 추정 — 분류 미완료, 라벨 폴백, 병합 보류 (다음 실행 시 재개)",
+          "error": null
+        }
+      },
+      {
+        "key": "coupangplay",
+        "name": "쿠팡플레이",
+        "collect": {
+          "new": 3,
+          "total": 2503,
+          "ok": true,
+          "error": null
+        },
+        "affinity": {
+          "ran": true,
+          "categories": 22,
+          "ok": true,
+          "complete": false,
+          "note": "한도 추정 — 분류 미완료, 라벨 폴백, 병합 보류 (다음 실행 시 재개)",
+          "error": null
+        }
+      },
+      {
+        "key": "disneyplus",
+        "name": "디즈니 플러스",
+        "collect": {
+          "new": 1,
+          "total": 2501,
+          "ok": true,
+          "error": null
+        },
+        "affinity": {
+          "ran": true,
+          "categories": 22,
+          "ok": true,
+          "complete": false,
+          "note": "한도 추정 — 분류 미완료, 라벨 폴백, 병합 보류 (다음 실행 시 재개)",
+          "error": null
+        }
+      }
+    ],
+    "totals": {
+      "new_reviews": 5,
+      "apps_ok": 6,
+      "apps_failed": 0,
+      "incomplete": 6
+    },
+    "quota_limited": true
+  }
+]
