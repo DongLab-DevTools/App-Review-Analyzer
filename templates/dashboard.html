@@ -245,12 +245,16 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
 
 .affinity-container{position:relative;width:100%;background:var(--bg-normal);border-radius:8px;box-shadow:inset 0 0 0 1px var(--line-normal);overflow:hidden;line-height:0}
 .affinity-container svg{display:block;width:100%;height:auto;max-height:65vh}
-.affinity-container .voronoi-cell{stroke:var(--bg-normal);stroke-width:2;cursor:pointer;transition:opacity .15s ease}
-.affinity-container .voronoi-cell:hover{opacity:0.85}
-.affinity-container .voronoi-cat-border{fill:none;stroke:var(--label-assistive);stroke-width:2.5;pointer-events:none}
-.affinity-container .voronoi-label{pointer-events:none;font-family:var(--font-family);font-weight:700;fill:#171719;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
-.affinity-container .voronoi-label-sub{pointer-events:none;font-family:var(--font-family);font-weight:600;fill:rgba(23,23,25,0.85);paint-order:stroke;stroke:rgba(255,255,255,0.8);stroke-width:2.5px;stroke-linejoin:round}
-.affinity-container .voronoi-count{pointer-events:none;font-family:var(--font-family);font-weight:500;fill:rgba(23,23,25,0.5);font-size:11px;paint-order:stroke;stroke:rgba(255,255,255,0.7);stroke-width:2px;stroke-linejoin:round}
+.affinity-container .voronoi-cell{stroke:#fff;stroke-width:1;cursor:pointer;transition:opacity .16s ease,filter .16s ease}
+.affinity-container svg:hover .voronoi-cell{opacity:0.45}
+.affinity-container .voronoi-cell:hover{opacity:1 !important;filter:saturate(1.5) brightness(0.94);stroke-width:1.5}
+.affinity-container .voronoi-cat-border{fill:none;stroke:#fff;stroke-width:2;stroke-linejoin:round;pointer-events:none}
+.affinity-container svg{display:block}
+/* 도형 안 텍스트 라벨 (HTML 오버레이로 한글 또렷 + 명도 대비) */
+.vt-labels{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:8px}
+.vt-label{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px;text-align:center;transition:opacity .16s ease}
+.vt-label .vt-name{font-weight:700;line-height:1.22;word-break:keep-all;letter-spacing:-0.01em}
+.vt-label .vt-cnt{font-weight:600;font-size:11px;line-height:1.2;opacity:0.82}
 
 /* 우측 카테고리 패널 */
 .affinity-sidebar{background:var(--bg-normal);border-radius:8px;box-shadow:inset 0 0 0 1px var(--line-normal);overflow:hidden}
@@ -314,6 +318,233 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
 .step-chip.done .step-num{background:var(--primary);color:#fff}
 .step-chip.error{color:var(--status-negative)}
 .step-chip.error .step-num{background:var(--status-negative);color:#fff}
+
+/* ── P1 티빙 대시보드 ── */
+#p1 .chart-grid-2 .card canvas{max-height:none}
+.tving-hero{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:12px}
+.hero-rating{display:flex;flex-direction:column;justify-content:center}
+.hero-score{font-size:52px;font-weight:700;line-height:1.05;letter-spacing:-0.03em;color:var(--primary);display:flex;align-items:flex-start;gap:4px}
+.hero-score .hero-star{font-size:24px;line-height:1;margin-top:6px;color:var(--primary)}
+.hero-trend{margin-top:8px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.hero-trend.up{color:var(--status-positive)}
+.hero-trend.down{color:var(--status-negative)}
+.hero-trend.flat{color:var(--label-alt)}
+.hero-trend.up::before{content:'▲'}.hero-trend.down::before{content:'▼'}.hero-trend.flat::before{content:'─'}
+.hero-stat{display:flex;flex-direction:column;justify-content:center}
+
+.task-list{display:flex;flex-direction:column;gap:2px}
+.task-item{position:relative;overflow:hidden;display:flex;align-items:flex-start;gap:12px;padding:12px 8px;border-radius:8px;cursor:pointer;transition:transform .1s ease}
+.task-item::after{content:'';position:absolute;inset:0;border-radius:inherit;background:#171719;opacity:0;transition:opacity .15s ease;pointer-events:none}
+.task-item:hover::after{opacity:0.0375}
+.task-item:active::after{opacity:0.09}
+.task-rank{width:24px;height:24px;border-radius:6px;background:var(--fill-normal);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--label-alt);flex-shrink:0;margin-top:1px}
+.task-body{flex:1;min-width:0}
+.task-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.task-label{font-size:14px;font-weight:600;color:var(--label-normal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task-sev{font-size:11px;font-weight:700;padding:2px 8px;border-radius:9999px;flex-shrink:0}
+.task-sev.sev-1{background:rgba(255,66,66,0.12);color:var(--status-negative)}
+.task-sev.sev-2,.task-sev.sev-3{background:rgba(255,146,0,0.14);color:var(--status-cautionary)}
+.task-sev.sev-4,.task-sev.sev-5{background:var(--fill-normal);color:var(--label-alt)}
+.task-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px}
+.task-count{font-size:13px;font-weight:500;color:var(--label-alt)}
+.task-trend{font-size:12px;font-weight:600}
+.task-trend.up{color:var(--status-negative)}
+.task-trend.down{color:var(--status-positive)}
+.task-trend.flat{color:var(--label-assistive)}
+.card-clickable{position:relative;overflow:hidden;cursor:pointer}
+.card-clickable::after{content:'';position:absolute;inset:0;border-radius:inherit;background:#171719;opacity:0;transition:opacity .15s ease;pointer-events:none}
+.card-clickable:hover::after{opacity:0.0375}
+@media (max-width:1100px){.tving-hero{grid-template-columns:1fr 1fr}}
+
+/* ── P2 경쟁사 벤치마크 ── */
+.row-tving{background:rgba(0,102,255,0.04)}
+.cmp-rank{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:var(--fill-normal);font-size:12px;font-weight:700;color:var(--label-alt)}
+.row-tving .cmp-rank{background:var(--primary);color:#fff}
+.cmp-tag{display:inline-flex;align-items:center;height:18px;padding:0 7px;border-radius:9999px;font-size:11px;font-weight:700;background:rgba(0,102,255,0.1);color:var(--primary);margin-left:4px}
+.cmp-complaints-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+.cmp-col{display:flex;flex-direction:column;gap:12px}
+.cmp-col-head{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--label-normal);padding-bottom:10px;box-shadow:inset 0 -1px 0 0 var(--line-alt)}
+.cmp-cat{display:flex;flex-direction:column;gap:5px}
+.cmp-cat-top{display:flex;justify-content:space-between;gap:8px;font-size:13px;line-height:18px}
+.cmp-cat-label{color:var(--label-neutral);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmp-cat-pct{color:var(--label-alt);font-weight:600;flex-shrink:0}
+.cmp-cat-track{height:6px;border-radius:9999px;background:var(--fill-normal);overflow:hidden}
+.cmp-cat-fill{height:100%;border-radius:9999px;background:rgba(112,115,124,0.4)}
+.cmp-col-tving .cmp-cat-fill{background:var(--primary)}
+@media (max-width:900px){.cmp-complaints-grid{grid-template-columns:1fr}}
+
+/* ── P3 내부 탭 ── */
+.p3-tabs{display:flex;gap:2px;margin-bottom:24px;box-shadow:inset 0 -1px 0 0 var(--line-normal)}
+.p3-tab{position:relative;padding:11px 16px;font-size:14px;font-weight:600;color:var(--label-alt);cursor:pointer;background:none;border:none;font-family:inherit;transition:color .15s ease}
+.p3-tab:hover{color:var(--label-normal)}
+.p3-tab.active{color:var(--label-normal)}
+.p3-tab.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--label-normal)}
+.p3-tab-panel{display:none}
+.p3-tab-panel.active{display:block}
+.period-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.period-date-input{height:32px;padding:0 10px;border:none;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line-normal);background:var(--bg-normal);font-family:inherit;font-size:13px;font-weight:500;color:var(--label-normal)}
+.period-cat{margin-bottom:8px}
+.period-cat-head{display:flex;align-items:center;gap:8px;padding:12px 0;cursor:pointer}
+.period-cat-head .pc-label{font-size:15px;font-weight:700;color:var(--label-normal)}
+.period-cat-head .pc-count{font-size:13px;font-weight:600;color:var(--status-negative);background:rgba(255,66,66,0.1);padding:1px 8px;border-radius:9999px}
+.period-cat-head .pc-arrow{margin-left:auto;color:var(--label-assistive);transition:transform .2s ease}
+.period-cat.open .pc-arrow{transform:rotate(90deg)}
+.period-review{padding:10px 14px;margin:4px 0 4px 22px;background:var(--bg-alt);border-radius:8px;font-size:13px;line-height:19px;color:var(--label-neutral)}
+.period-review .pr-meta{font-size:11px;font-weight:600;color:var(--label-assistive);margin-bottom:3px}
+.hl-section{margin-bottom:28px}
+.hl-section:last-child{margin-bottom:0}
+.hl-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.hl-colhead{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:var(--label-normal);margin-bottom:12px}
+.hl-colhead::before{content:'';width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.hl-colhead.neg::before{background:var(--status-negative)}
+.hl-colhead.pos::before{background:var(--status-positive)}
+.hl-empty{color:var(--label-assistive);font-size:13px;text-align:center;padding:24px}
+.hlc{position:relative;overflow:hidden;background:var(--bg-normal);border-radius:10px;box-shadow:inset 0 0 0 1px var(--line-normal);padding:14px 16px;margin-bottom:10px;cursor:pointer}
+.hlc:last-child{margin-bottom:0}
+.hlc::after{content:'';position:absolute;inset:0;border-radius:inherit;background:#171719;opacity:0;transition:opacity .15s ease;pointer-events:none}
+.hlc:hover::after{opacity:0.0375}
+.hlc-store{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--label-assistive);margin-left:auto}
+.hlc:hover .hlc-store{color:var(--primary)}
+.hlc-top{display:flex;align-items:center;gap:8px;margin-bottom:9px;flex-wrap:wrap}
+.hlc-thumbs{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:9999px;background:var(--fill-normal);color:var(--label-alt)}
+.hlc-thumbs.neg{background:rgba(255,66,66,0.1);color:var(--status-negative)}
+.hlc-thumbs.pos{background:rgba(0,191,64,0.1);color:var(--status-positive)}
+.hlc-top .stars{font-size:13px}
+.hlc-tag{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:9999px;font-size:11px;font-weight:700;background:rgba(0,102,255,0.1);color:var(--primary)}
+.hlc-date{font-size:12px;color:var(--label-assistive);font-weight:500}
+.hlc-text{font-size:14px;line-height:21px;color:var(--label-neutral);cursor:pointer}
+.clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hlc-text.expanded{display:block;-webkit-line-clamp:unset;overflow:visible}
+.collapse-3.collapsed > .hlc:nth-child(n+4){display:none}
+.collapse-4.collapsed > .hlc:nth-child(n+5){display:none}
+.hl-more-btn{width:100%;margin-top:4px;padding:10px;border:none;background:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--primary);cursor:pointer;border-radius:8px;position:relative;overflow:hidden}
+.hl-more-btn::after{content:'';position:absolute;inset:0;background:var(--primary);opacity:0;transition:opacity .15s ease}
+.hl-more-btn:hover::after{opacity:0.05}
+.hl-mark{background:rgba(0,102,255,0.14);color:var(--primary);font-weight:700;border-radius:3px;padding:0 2px}
+.hl-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.hl-chip-stat{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 12px;border-radius:9999px;font-size:13px;font-weight:500;background:var(--fill-normal);color:var(--label-neutral)}
+.hl-chip-stat b{color:var(--primary);font-weight:700}
+.chip .chip-n{font-weight:700;opacity:0.85}
+.hl-scroll{max-height:440px;overflow-y:auto;padding-right:8px}
+.hl-scroll::-webkit-scrollbar{width:6px}
+.hl-scroll::-webkit-scrollbar-thumb{background:var(--line-normal);border-radius:3px}
+.hl-scroll::-webkit-scrollbar-thumb:hover{background:var(--label-assistive)}
+.hl-scroll::-webkit-scrollbar-track{background:transparent}
+.hl-scroll .hl-grid{margin:0}
+.hl-scroll .hl-grid .hlc{margin-bottom:0}
+.hl-count{font-size:13px;font-weight:500;color:var(--label-assistive)}
+.hl-spikes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hl-spike{position:relative;overflow:hidden;background:var(--bg-normal);border-radius:10px;box-shadow:inset 0 0 0 1px var(--line-normal);padding:16px;cursor:pointer}
+.hl-spike::after{content:'';position:absolute;inset:0;background:#171719;opacity:0;transition:opacity .15s ease;pointer-events:none}
+.hl-spike:hover::after{opacity:0.0375}
+.spike-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.spike-date{font-size:15px;font-weight:700;color:var(--label-normal)}
+.spike-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:9999px;background:rgba(255,66,66,0.1);color:var(--status-negative)}
+.spike-bar{height:6px;border-radius:9999px;background:var(--fill-normal);overflow:hidden;margin-bottom:7px}
+.spike-bar-fill{height:100%;border-radius:9999px;background:var(--status-negative)}
+.spike-count{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--label-alt);font-weight:500}
+.spike-count b{color:var(--label-normal);font-weight:700}
+.spike-link{color:var(--primary);font-weight:600;display:inline-flex;align-items:center;gap:2px}
+@media (max-width:900px){.hl-grid,.hl-spikes{grid-template-columns:1fr}}
+
+/* ── 데일리 리포트 ── */
+.rp-loading{padding:60px;text-align:center;color:var(--label-assistive);font-size:14px}
+.rp-banner{display:flex;align-items:center;gap:10px;padding:16px 20px;border-radius:10px;background:rgba(0,102,255,0.06);box-shadow:inset 0 0 0 1px rgba(0,102,255,0.14);margin-bottom:20px}
+.rp-banner svg{flex-shrink:0;color:var(--primary)}
+.rp-banner .rp-banner-txt{font-size:15px;font-weight:600;color:var(--label-normal)}
+.rp-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.rp-delta{font-size:13px;font-weight:600;margin-left:6px}
+.rp-delta.up{color:var(--status-negative)}.rp-delta.down{color:var(--status-positive)}.rp-delta.flat{color:var(--label-assistive)}
+.rp-delta.good{color:var(--status-positive)}.rp-delta.bad{color:var(--status-negative)}
+.rp-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.rp-sec-title{font-size:15px;font-weight:700;color:var(--label-normal);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.rp-sec-title .rp-num{width:22px;height:22px;border-radius:6px;background:var(--fill-normal);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--label-alt)}
+.rp-row{padding:11px 0;box-shadow:inset 0 -1px 0 0 var(--line-alt)}
+.rp-row:last-child{box-shadow:none}
+.rp-row-top{display:flex;align-items:center;gap:8px}
+.rp-row-label{font-size:14px;font-weight:600;color:var(--label-normal)}
+.rp-row-cnt{margin-left:auto;font-size:13px;font-weight:600;color:var(--label-alt);flex-shrink:0}
+.rp-trend-tag{font-size:12px;font-weight:600}
+.rp-trend-tag.up{color:var(--status-negative)}.rp-trend-tag.down{color:var(--status-positive)}.rp-trend-tag.flat{color:var(--label-assistive)}
+.rp-sev{font-size:11px;font-weight:700;padding:2px 8px;border-radius:9999px;flex-shrink:0}
+.rp-sev.s1{background:rgba(255,66,66,0.12);color:var(--status-negative)}
+.rp-sev.s2,.rp-sev.s3{background:rgba(255,146,0,0.14);color:var(--status-cautionary)}
+.rp-sev.s4,.rp-sev.s5{background:var(--fill-normal);color:var(--label-alt)}
+.rp-rep{font-size:12.5px;line-height:18px;color:var(--label-alt);margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rp-spike-day{display:flex;align-items:center;justify-content:space-between;padding:9px 0;box-shadow:inset 0 -1px 0 0 var(--line-alt)}
+.rp-spike-day:last-child{box-shadow:none}
+.rp-spike-date{font-weight:700;color:var(--label-normal)}
+.rp-spike-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:9999px;background:rgba(255,66,66,0.1);color:var(--status-negative)}
+.rp-plat{display:flex;gap:12px}
+.rp-plat-card{flex:1;padding:14px;border-radius:10px;box-shadow:inset 0 0 0 1px var(--line-normal);text-align:center}
+.rp-plat-card .rp-plat-name{font-size:12px;font-weight:600;color:var(--label-alt);margin-bottom:6px}
+.rp-plat-card .rp-plat-val{font-size:22px;font-weight:700}
+.rp-plat-card.muted{opacity:0.6}
+.rp-empty{padding:18px;text-align:center;color:var(--label-assistive);font-size:13px}
+.rp-stale{padding:11px 14px;border-radius:9px;background:rgba(255,146,0,0.08);box-shadow:inset 0 0 0 1px rgba(255,146,0,0.2);color:var(--label-neutral);font-size:13px;line-height:19px;margin-bottom:12px}
+.rp-stale b{color:var(--status-cautionary);font-weight:700}
+/* 자동화 현황 */
+.auto-health{display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px var(--line-normal);margin-bottom:16px}
+.auto-dot{width:11px;height:11px;border-radius:9999px;flex-shrink:0}
+.auto-dot.ok{background:var(--status-positive)} .auto-dot.partial,.auto-dot.stale{background:var(--status-cautionary)} .auto-dot.error{background:var(--status-negative)} .auto-dot.none{background:var(--label-assistive)}
+.auto-health-main{flex:1}
+.auto-health-title{font-size:15px;font-weight:700;color:var(--label-normal);margin-bottom:2px}
+.auto-health-sub{font-size:13px;color:var(--label-alt)}
+.auto-health-next{text-align:right;font-size:12px;color:var(--label-alt)}
+.auto-health-next b{display:block;font-size:14px;color:var(--label-normal);font-weight:600;margin-top:2px}
+.auto-run{padding:14px 16px;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px var(--line-normal);margin-bottom:10px}
+.auto-run-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.auto-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:9999px;letter-spacing:0.02em}
+.auto-badge.success{background:rgba(0,191,64,0.12);color:#00a838} .auto-badge.partial{background:rgba(255,146,0,0.14);color:#e07d00} .auto-badge.error{background:rgba(255,66,66,0.12);color:var(--status-negative)} .auto-badge.skipped,.auto-badge.running{background:var(--fill-normal);color:var(--label-alt)}
+.auto-run-time{font-size:13px;font-weight:600;color:var(--label-normal)}
+.auto-run-meta{font-size:12px;color:var(--label-alt);margin-left:auto}
+.auto-apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.auto-app{font-size:12px;padding:7px 10px;border-radius:8px;background:var(--fill-alt);line-height:1.5}
+.auto-app .nm{font-weight:600;color:var(--label-normal)}
+.auto-app .ng{color:var(--primary);font-weight:600}
+.auto-app .er{color:var(--status-negative)}
+.auto-app .mut{color:var(--label-assistive)}
+.auto-app .hold{color:#e07d00;font-weight:600;cursor:help}
+.auto-app .localllm{color:var(--primary);font-weight:600;cursor:help}
+.auto-hold-note{font-size:12px;color:#e07d00;background:rgba(255,146,0,0.08);box-shadow:inset 0 0 0 1px rgba(255,146,0,0.2);border-radius:8px;padding:7px 10px;margin-bottom:8px}
+.auto-local-note{font-size:12px;color:var(--primary);background:rgba(0,102,255,0.06);box-shadow:inset 0 0 0 1px rgba(0,102,255,0.18);border-radius:8px;padding:7px 10px;margin-bottom:8px}
+.affinity-stale{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;background:rgba(255,146,0,0.08);box-shadow:inset 0 0 0 1px rgba(255,146,0,0.22);color:var(--label-neutral);font-size:13px;line-height:19px;margin-bottom:16px}
+.affinity-stale svg{color:var(--status-cautionary)}
+.affinity-stale .asb-txt b{color:var(--status-cautionary);font-weight:700}
+/* 데일리 리포트 — 액션 브리핑 추가 요소 */
+.rp-period{display:flex;gap:4px}
+.rp-click{cursor:pointer;border-radius:8px;margin:0 -8px;padding-left:8px;padding-right:8px;transition:background .12s ease}
+.rp-click:hover{background:var(--bg-alt)}
+.rp-click .rp-row-cnt{color:var(--primary)}
+.rp-kind{font-size:11px;font-weight:700;padding:2px 8px;border-radius:9999px;flex-shrink:0}
+.rp-kind.new{background:rgba(0,102,255,0.12);color:var(--primary)}
+.rp-kind.surge{background:rgba(255,66,66,0.12);color:var(--status-negative)}
+.rp-ver{font-size:11px;font-weight:700;padding:1px 7px;border-radius:6px;background:var(--fill-normal);color:var(--label-alt);flex-shrink:0}
+.rp-dep{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:13px;box-shadow:inset 0 -1px 0 0 var(--line-alt)}
+.rp-dep.warn{background:rgba(255,66,66,0.06)}
+.rp-dep-ver{font-weight:700;color:var(--label-normal);min-width:80px}
+.rp-dep-date{color:var(--label-assistive);font-size:12px;min-width:84px}
+.rp-dep-n{color:var(--label-alt);font-size:12px;min-width:50px}
+.rp-dep-avg{margin-left:auto;font-weight:600;color:var(--label-alt)}
+.rp-dep-drop{font-weight:700;margin-left:4px}
+.rp-dep-drop.bad{color:var(--status-negative)}.rp-dep-drop.good{color:var(--status-positive)}
+.rp-vs-row{display:flex;align-items:center;gap:10px;padding:10px 0;box-shadow:inset 0 -1px 0 0 var(--line-alt)}
+.rp-vs-k{font-size:13px;font-weight:600;color:var(--label-alt);min-width:72px}
+.rp-vs-self{font-size:18px;font-weight:700}
+.rp-vs-self.bad{color:var(--status-negative)}.rp-vs-self.good{color:var(--status-positive)}
+.rp-vs-vs{font-size:13px;color:var(--label-assistive)}
+.rp-vs-note{font-size:12px;color:var(--label-alt);margin-top:10px}
+.rp-hl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.rp-hl-h{font-size:13px;font-weight:700;color:var(--label-normal);margin-bottom:10px}
+.rp-rv{padding:10px 12px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line-normal);margin-bottom:8px}
+.rp-rv-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px;font-size:11px}
+.rp-rv-meta .stars{font-size:12px}
+.rp-rv-thumb{font-weight:700;color:var(--label-alt)}
+.rp-rv-date{color:var(--label-assistive);margin-left:auto}
+.rp-rv-text{font-size:12.5px;line-height:18px;color:var(--label-neutral);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+@media (max-width:900px){.rp-hl-grid{grid-template-columns:1fr}}
+@media (max-width:900px){.rp-kpis{grid-template-columns:1fr}.rp-grid2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -330,13 +561,21 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section">
-      <a class="active" data-page="p1">
+      <a class="active" data-page="report">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="2.5" width="13" height="13" rx="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 11.5V8M9 11.5V6M12.5 11.5v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        데일리 리포트
+      </a>
+      <a data-page="p1">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="10.5" y="2" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="10.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="10.5" y="10.5" width="5.5" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
-        통합 대시보드
+        티빙 대시보드
       </a>
       <a data-page="p2">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 13V7M7.5 13V5M12 13V9M16.5 13V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         앱 비교
+      </a>
+      <a data-page="automation">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 4.5V2M9 4.5a4.5 4.5 0 1 0 4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 6.5V9l1.8 1.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        자동화 현황
       </a>
     </div>
     {% for group_name, group_keys in data.category_groups.items() %}
@@ -360,105 +599,138 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
   <div class="sidebar-footer">
     <div class="label">마지막 수집</div>
     <div class="value">{{ data.collected_at }}</div>
+    <button class="btn btn-outline btn-sm" onclick="refreshData()" style="width:100%;margin-top:10px;gap:5px;justify-content:center">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 10v3h3M14 6V3h-3M2 6.5A5.5 5.5 0 0 1 12.8 4M14 9.5A5.5 5.5 0 0 1 3.2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      전체 OTT 새로고침
+    </button>
   </div>
 </aside>
 
 <!-- Main Content -->
 <div class="main">
 
-<!-- ═══════ P1. 통합 대시보드 ═══════ -->
-<section class="page-section active" id="p1">
+<!-- ═══════ 데일리 리포트 ═══════ -->
+<section class="page-section active" id="report">
+  <div class="flex-between mb-24">
+    <div style="display:flex;align-items:center;gap:16px">
+      <h1 class="page-title">데일리 리포트</h1>
+      <div class="select-wrap">
+        <select class="select" id="report-app-select" onchange="loadDailyReport(this.value)">
+          {% for app in data.apps %}
+          <option value="{{ app.key }}" {% if app.is_primary %}selected{% endif %}>{{ app.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="rp-period" id="report-period">
+        <button class="chip" data-p="1" onclick="setReportPeriod(1)">어제</button>
+        <button class="chip active" data-p="7" onclick="setReportPeriod(7)">7일</button>
+        <button class="chip" data-p="30" onclick="setReportPeriod(30)">30일</button>
+      </div>
+      <span id="report-anchor" style="font-size:13px;color:var(--label-assistive)"></span>
+      <button class="btn btn-outline btn-sm" onclick="alert('슬랙 전송은 다음 단계에서 연동됩니다.\n이 리포트 내용을 요약해 매일 아침 슬랙으로 보낼 예정입니다.')" style="gap:5px;opacity:0.75">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 9.5l4 4 6-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        슬랙으로 보내기
+      </button>
+    </div>
+  </div>
+  <div id="report-body"><div class="rp-loading">리포트 생성 중…</div></div>
+</section>
+
+<!-- ═══════ P1. 티빙 대시보드 ═══════ -->
+<section class="page-section" id="p1">
   <div class="flex-between mb-24">
     <div>
-      <h1 class="page-title">통합 대시보드</h1>
-      <p class="page-desc">한눈에 전체 앱 현황을 파악합니다</p>
-    </div>
-    <button class="btn btn-outline btn-sm" id="refresh-btn" onclick="refreshData()">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 10v3h3M14 6V3h-3M2 6.5A5.5 5.5 0 0 1 12.8 4M14 9.5A5.5 5.5 0 0 1 3.2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      리뷰 최신화
-    </button>
-  </div>
-
-  <div class="kpi-grid-3">
-    <div class="card card-sm">
-      <div class="card-title">총 수집 리뷰</div>
-      <div class="kpi-value">{{ "{:,}".format(data.global.total) }}건</div>
-      <div class="kpi-sub">{{ data.global.app_count }}개 앱 · Google Play + App Store</div>
-    </div>
-    <div class="card card-sm">
-      <div class="card-title">전체 평균 별점</div>
-      <div class="kpi-value">{{ data.global.avg_score }}</div>
-    </div>
-    <div class="card card-sm">
-      <div class="card-title">전체 긍정 비율</div>
-      <div class="kpi-value" style="color:{% if data.global.pos_pct >= 60 %}var(--status-positive){% elif data.global.pos_pct < 40 %}var(--status-negative){% else %}var(--status-cautionary){% endif %}">{{ data.global.pos_pct }}%</div>
+      <h1 class="page-title">티빙 대시보드</h1>
+      <p class="page-desc">티빙의 현 위치 → 불만 원인 → 개선 과제 → 평점 추이를 한 흐름으로 봅니다</p>
     </div>
   </div>
 
-  {% for group_name, group_keys in data.category_groups.items() %}
-  {% set ns = namespace(group_apps=[]) %}
-  {% for app in data.apps if app.key in group_keys %}
-    {% set ns.group_apps = ns.group_apps + [app] %}
-  {% endfor %}
-  {% if ns.group_apps %}
-  <div class="section-title">{{ group_name }} <span class="count">{{ ns.group_apps|length }}개 앱</span></div>
-  <div class="app-grid">
-    {% for app in ns.group_apps %}
-    <div class="card card-sm app-card" onclick="goToApp('{{ app.key }}')">
-      <div class="app-name">
-        {% if app.icon %}<img class="app-icon" src="{{ app.icon }}" alt="{{ app.name }}">{% else %}<div class="app-icon" style="background:var(--fill-normal)"></div>{% endif %}
-        {{ app.name }}
-      </div>
-      <div class="app-stats">
-        <div><div class="stat-label">리뷰</div><div class="stat-value">{{ "{:,}".format(app.total) }}</div></div>
-        <div><div class="stat-label">별점</div><div class="stat-value">{{ app.avg_score }}</div></div>
-        <div><div class="stat-label">긍정</div><div class="stat-value positive-ratio"><span class="ratio-dot {% if app.pos_pct >= 60 %}green{% elif app.pos_pct >= 40 %}orange{% else %}red{% endif %}"></span>{{ app.pos_pct }}%</div></div>
+  <!-- ① HERO — 티빙 현황 -->
+  <div class="tving-hero mb-24">
+    <div class="card hero-rating">
+      <div class="card-title">티빙 평균 별점</div>
+      <div class="hero-score">{{ tving.hero.avg_score }}<span class="hero-star">★</span></div>
+      <div class="hero-trend {% if tving.hero.trend_delta > 0 %}up{% elif tving.hero.trend_delta < 0 %}down{% else %}flat{% endif %}">
+        전월 대비 {{ "%+.2f"|format(tving.hero.trend_delta) }}
       </div>
     </div>
-    {% endfor %}
+    <div class="card card-sm hero-stat">
+      <div class="card-title">OTT {{ tving.hero.total_apps }}개 중 순위</div>
+      <div class="kpi-value" style="color:var(--status-negative)">{{ tving.hero.rank }}위</div>
+      <div class="kpi-sub">경쟁 OTT 평점 평균 {{ tving.hero.competitor_avg }}</div>
+    </div>
+    <div class="card card-sm hero-stat">
+      <div class="card-title">경쟁사 평균과의 격차</div>
+      <div class="kpi-value" style="color:{% if tving.hero.gap >= 0 %}var(--status-positive){% else %}var(--status-negative){% endif %}">{{ "%+.2f"|format(tving.hero.gap) }}</div>
+      <div class="kpi-sub">{% if tving.hero.gap < 0 %}따라잡아야 할 갭{% else %}우위{% endif %}</div>
+    </div>
+    <div class="card card-sm hero-stat">
+      <div class="card-title">최근 30일 신규 리뷰</div>
+      <div class="kpi-value">{{ "{:,}".format(tving.hero.recent_30d) }}</div>
+      <div class="kpi-sub">개선 신호 모니터링</div>
+    </div>
   </div>
-  {% endif %}
-  {% endfor %}
 
-  <div class="chart-grid-2">
+  <!-- ② 경쟁 포지셔닝 + ⑤ 평점 추이 -->
+  <div class="chart-grid-2 mb-24">
     <div class="card">
       <div class="card-header">
-        <div class="section-title" style="margin-bottom:0">전체 주요 불만 TOP 5</div>
-        <span style="font-size:12px;color:var(--label-assistive)">별점 1~2점 기준</span>
+        <div class="section-title" style="margin-bottom:0">② 경쟁 포지셔닝</div>
+        <span style="font-size:12px;color:var(--label-assistive)">OTT 평균 별점</span>
       </div>
-      <div class="rank-list">
-        {% if data.complaints_top5 %}
-          {% set max_cnt = data.complaints_top5[0].count %}
-          {% for c in data.complaints_top5 %}
-          <div class="rank-item">
-            <span class="rank-num">{{ loop.index }}</span>
-            <div class="rank-content">
-              <span class="rank-label">{{ c.name }}</span>
-              <div class="rank-bar-track"><div class="rank-bar-fill" style="width:{{ (c.count / max_cnt * 100)|round }}%"></div></div>
-              <span class="rank-count">{{ c.count }}건</span>
-            </div>
-          </div>
-          {% endfor %}
-        {% else %}
-          <div style="color:var(--label-assistive);font-size:13px;text-align:center;padding:20px">데이터 없음</div>
-        {% endif %}
+      <div style="position:relative;height:240px"><canvas id="chart-positioning"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="section-title" style="margin-bottom:0">⑤ 평점 추이</div>
+        <span style="font-size:12px;color:var(--label-assistive)">월별 · 경쟁사 평균 대비</span>
       </div>
+      <div style="position:relative;height:240px"><canvas id="chart-rating-trend"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ③ 불만 카테고리 정형화 + ④ 개선 과제 -->
+  {% if tving.category_stale %}
+  <div class="rp-stale" style="cursor:pointer" onclick="goToAffinity()">⚠ 불만 카테고리는 <b>{{ tving.category_basis }}</b> 분석 기준입니다. 이후 리뷰는 미분류 — '리뷰 현황'에서 자동 분석을 다시 실행하면 최신화됩니다.</div>
+  {% endif %}
+  <div class="chart-grid-2">
+    <div class="card card-clickable" onclick="goToAffinity()">
+      <div class="card-header">
+        <div class="section-title" style="margin-bottom:0">③ 불만 카테고리 분포</div>
+        <span style="font-size:12px;color:var(--label-assistive)">클릭 → 심층 분석 ↗</span>
+      </div>
+      <div style="position:relative;height:320px"><canvas id="chart-complaints"></canvas></div>
     </div>
 
     <div class="card">
-      <div class="section-title" style="margin-bottom:14px">최근 주목할 리뷰</div>
-      {% for r in data.notable[:4] %}
-      <div class="review-card">
-        <div class="review-meta">
-          <span class="stars">{{ "★" * r.score }}{{ "☆" * (5 - r.score) }}</span>
-          <span class="badge {% if r.score >= 4 %}pos{% else %}neg{% endif %}">{% if r.score >= 4 %}긍정{% else %}부정{% endif %}</span>
-          {% if r.thumbsUpCount %}<span style="margin-left:auto;display:inline-flex;align-items:center;gap:3px"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M5 14H3a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h2m0 7V7m0 7h6.3a2 2 0 0 0 2-1.7l.7-4.3a1 1 0 0 0-1-1.2H10V3.5A1.5 1.5 0 0 0 8.5 2L5 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ r.thumbsUpCount }}</span>{% endif %}
-        </div>
-        <div class="review-text">{{ r.content[:150] }}{% if r.content|length > 150 %}...{% endif %}</div>
-        <div class="review-app">{{ r._app_name }} · {{ r.at[:10] if r.at else "" }}</div>
+      <div class="card-header">
+        <div class="section-title" style="margin-bottom:0">④ 개선 과제 TOP 5</div>
+        <span style="font-size:12px;color:var(--label-assistive)">불만 건수 · 추세</span>
       </div>
-      {% if not loop.last %}<div class="review-divider"></div>{% endif %}
-      {% endfor %}
+      <div class="task-list" id="p1-task-list">
+        {% for t in tving.tasks %}
+        <div class="task-item" onclick="goToAffinity()">
+          <span class="task-rank">{{ t.rank }}</span>
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-label">{{ t.label }}</span>
+              <span class="task-sev sev-{{ loop.index }}">{{ t.severity }}</span>
+            </div>
+            <div class="task-meta">
+              <span class="task-count">{{ "{:,}".format(t.count) }}건 · {{ t.pct }}%</span>
+              <span class="task-trend {{ t.trend }}">
+                {% if t.trend == 'up' %}▲ 증가{% elif t.trend == 'down' %}▼ 감소{% else %}─ 유지{% endif %}
+                {% if t.trend != 'flat' %}({{ "%+d"|format(t.trend_delta) }}){% endif %}
+              </span>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div style="color:var(--label-assistive);font-size:13px;text-align:center;padding:20px">데이터 없음</div>
+        {% endfor %}
+      </div>
     </div>
   </div>
 </section>
@@ -467,36 +739,42 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
 <section class="page-section" id="p2">
   <div class="flex-between mb-24">
     <div>
-      <h1 class="page-title">앱 비교</h1>
-      <p class="page-desc">경쟁 앱 대비 위치를 파악합니다</p>
+      <h1 class="page-title">경쟁사 벤치마크</h1>
+      <p class="page-desc">티빙이 경쟁 OTT 대비 어디서·얼마나 뒤처지는지 상세 비교합니다</p>
     </div>
   </div>
 
   <div class="card mb-20" style="padding:0">
     <div style="padding:20px 24px 0">
-      <div class="section-title" style="margin-bottom:12px">비교 테이블</div>
+      <div class="section-title" style="margin-bottom:12px">비교 테이블 <span class="count">평점 높은 순</span></div>
     </div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th style="padding-left:24px">앱 이름</th>
+            <th style="padding-left:24px">순위</th>
+            <th>앱 이름</th>
             <th>리뷰 수</th>
             <th>평균 별점</th>
             <th>긍정 비율</th>
-            <th>부정 비율</th>
-            <th style="padding-right:24px">주요 불만 TOP 3</th>
+            <th style="padding-right:24px">vs 티빙</th>
           </tr>
         </thead>
         <tbody>
-          {% for app in data.apps %}
-          <tr>
-            <td style="padding-left:24px">{{ app.name }}</td>
+          {% for app in tving.compare.apps %}
+          <tr class="{% if app.is_tving %}row-tving{% endif %}">
+            <td style="padding-left:24px"><span class="cmp-rank">{{ app.rank }}</span></td>
+            <td>
+              {% if app.is_tving %}<span style="color:var(--primary);font-weight:700">{{ app.name }}</span> <span class="cmp-tag">우리 앱</span>
+              {% else %}{{ app.name }}{% endif %}
+            </td>
             <td>{{ "{:,}".format(app.total) }}</td>
-            <td><span class="stars">{{ "★" * (app.avg_score|round|int) }}{{ "☆" * (5 - app.avg_score|round|int) }}</span> {{ app.avg_score }}</td>
-            <td><span class="badge pos">{{ app.pos_pct }}%</span></td>
-            <td><span class="badge neg">{{ app.neg_pct }}%</span></td>
-            <td style="padding-right:24px"><span style="font-size:13px;color:var(--label-alt)">{{ app.top_neg_cats | join(", ") if app.top_neg_cats else "-" }}</span></td>
+            <td><span class="stars">{{ "★" * (app.avg_score|round|int) }}{{ "☆" * (5 - app.avg_score|round|int) }}</span> <strong>{{ app.avg_score }}</strong></td>
+            <td><span class="badge {% if app.pos_pct >= 50 %}pos{% elif app.pos_pct >= 30 %}neu{% else %}neg{% endif %}">{{ app.pos_pct }}%</span></td>
+            <td style="padding-right:24px">
+              {% if app.is_tving %}<span style="color:var(--label-assistive)">기준</span>
+              {% else %}<span style="font-weight:600;color:var(--label-neutral)">▲ {{ "%+.2f"|format(app.vs_tving) }}</span>{% endif %}
+            </td>
           </tr>
           {% endfor %}
         </tbody>
@@ -504,10 +782,24 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
     </div>
   </div>
 
-  <div class="chart-grid-3 mb-20">
-    <div class="card"><div class="card-title">평균 별점 비교</div><canvas id="chart-cmp-score" height="220"></canvas></div>
-    <div class="card"><div class="card-title">긍정 비율 비교</div><canvas id="chart-cmp-pos" height="220"></canvas></div>
-    <div class="card"><div class="card-title">카테고리별 비교</div><canvas id="chart-cmp-cat" height="220"></canvas></div>
+  <div class="chart-grid-2 mb-20">
+    <div class="card">
+      <div class="card-header"><div class="section-title" style="margin-bottom:0">평균 별점 비교</div><span style="font-size:12px;color:var(--label-assistive)">티빙 강조</span></div>
+      <div style="position:relative;height:260px"><canvas id="chart-cmp-score"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="section-title" style="margin-bottom:0">별점 분포 비교</div><span style="font-size:12px;color:var(--label-assistive)">1~5점 구성비</span></div>
+      <div style="position:relative;height:260px"><canvas id="chart-cmp-stars"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card mb-20">
+    <div class="card-header">
+      <div class="section-title" style="margin-bottom:0">불만 카테고리 비교</div>
+      <span style="font-size:12px;color:var(--label-assistive)">어피니티 분석 보유 앱 한정{% if tving.category_basis %} · {{ tving.category_basis }} 기준{% endif %}</span>
+    </div>
+    {% if tving.category_stale %}<div class="rp-stale">⚠ 티빙 불만 분류는 {{ tving.category_basis }} 기준 — 자동 분석 재실행 시 최신화됩니다.</div>{% endif %}
+    <div class="cmp-complaints-grid" id="cmp-complaints"></div>
   </div>
 
   <div class="section-title">비교 요약</div>
@@ -527,15 +819,78 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
         </select>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <button class="btn btn-outline btn-sm" onclick="goToAffinity()" style="gap:4px">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="6.5" r="3" stroke="currentColor" stroke-width="1.3"/><circle cx="11" cy="5.5" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="9" cy="11" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>
-        어피니티 분석
-      </button>
+    <div style="display:flex;align-items:center;gap:10px">
       <span style="font-size:13px;color:var(--label-assistive)">마지막 수집: {{ data.collected_at }}</span>
+      <button class="btn btn-outline btn-sm" id="p3-refresh-btn" onclick="refreshAppData()" style="gap:5px">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 10v3h3M14 6V3h-3M2 6.5A5.5 5.5 0 0 1 12.8 4M14 9.5A5.5 5.5 0 0 1 3.2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        이 앱 리뷰 새로고침
+      </button>
     </div>
   </div>
 
+  <!-- 내부 탭 -->
+  <div class="p3-tabs">
+    <button class="p3-tab active" data-tab="affinity" onclick="showP3Tab('affinity')">리뷰 현황</button>
+    <button class="p3-tab" data-tab="overview" onclick="showP3Tab('overview')">개요</button>
+    <button class="p3-tab" data-tab="reviews" onclick="showP3Tab('reviews')">전체 리뷰</button>
+    <button class="p3-tab" data-tab="trend" onclick="showP3Tab('trend')">별점·배포 추이</button>
+    <button class="p3-tab" data-tab="period" onclick="showP3Tab('period')">기간별 분석</button>
+    <button class="p3-tab" data-tab="highlights" onclick="showP3Tab('highlights')">주요 리뷰</button>
+    <button class="p3-tab" data-tab="platform" onclick="showP3Tab('platform')">플랫폼별</button>
+  </div>
+
+  <!-- 탭: 리뷰 현황 (보로노이 트리맵) -->
+  <div class="p3-tab-panel active" data-panel="affinity">
+    <div class="flex-between mb-20">
+      <p class="page-desc" style="margin:0;font-size:14px">비정형 리뷰를 카테고리로 묶어 보여줍니다. 블록을 클릭해 세부 리뷰를 확인하세요.</p>
+      <div class="btn-group" style="display:flex;gap:8px;flex-shrink:0">
+        <button class="btn btn-outline btn-sm" onclick="startAutoAffinity()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5v3M8 11.5v3M1.5 8h3M11.5 8h3M3.4 3.4l2.1 2.1M10.5 10.5l2.1 2.1M3.4 12.6l2.1-2.1M10.5 5.5l2.1-2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          자동 분석
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="downloadAffinityText()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M4 7l4 4 4-4M3 13h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          리뷰 텍스트
+        </button>
+      </div>
+    </div>
+    <div id="affinity-stale-banner" class="affinity-stale" style="display:none">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="flex-shrink:0"><path d="M9 2l7 13H2L9 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 7.5v3.5M9 13h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="asb-txt" style="flex:1"></span>
+      <button class="btn btn-primary btn-sm" onclick="startAutoAffinity()" style="flex-shrink:0">자동 분석 실행</button>
+    </div>
+    <div class="affinity-summary" id="p5-summary" style="display:none"></div>
+    <div class="affinity-breadcrumb" id="p5-breadcrumb" style="display:none">
+      <a onclick="affinityZoomOut()">전체</a>
+    </div>
+    <div class="affinity-layout" id="p5-layout" style="display:none">
+      <div>
+        <div style="position:relative">
+          <div class="affinity-container" id="p5-treemap"></div>
+          <button class="affinity-zoom-out-btn" id="p5-zoom-out" style="display:none" onclick="affinityZoomOut()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L5 7l3.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            전체 맵으로 돌아가기
+          </button>
+        </div>
+        <div class="affinity-legend" id="p5-legend"></div>
+      </div>
+      <div class="affinity-sidebar" id="p5-sidebar"></div>
+    </div>
+    <div class="affinity-empty" id="p5-empty">
+      <div class="affinity-empty-icon">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="8" stroke="var(--label-assistive)" stroke-width="1.5"/><circle cx="11" cy="12" r="2.5" stroke="var(--label-assistive)" stroke-width="1.2"/><circle cx="17.5" cy="11" r="1.8" stroke="var(--label-assistive)" stroke-width="1.2"/><circle cx="14.5" cy="17" r="2" stroke="var(--label-assistive)" stroke-width="1.2"/></svg>
+      </div>
+      <h3>어피니티 분석 결과가 없습니다</h3>
+      <p>리뷰를 클러스터링하여 보로노이 트리맵으로 시각화합니다.</p>
+      <button class="btn btn-primary btn-sm" onclick="startAutoAffinity()" style="gap:6px">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8l3.5-3.5M3 8l3.5 3.5M13 8l-3.5-3.5M13 8l-3.5 3.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        분석 시작
+      </button>
+    </div>
+  </div>
+
+  <!-- 탭: 개요 -->
+  <div class="p3-tab-panel" data-panel="overview">
   <div class="kpi-grid-4" id="p3-kpis"></div>
 
   <!-- 최근 리뷰 미리보기 -->
@@ -577,86 +932,92 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
   </div>
 
   <div class="insight-box mb-20" id="p3-insights"></div>
-</section>
+  </div><!-- /개요 -->
 
-<!-- ═══════ P4. 전체 리뷰 ═══════ -->
-<section class="page-section" id="p4">
-  <div class="flex-between mb-24">
-    <div style="display:flex;align-items:center;gap:16px">
-      <button class="btn btn-ghost btn-sm" onclick="goBackToP3()" style="color:var(--label-alt)">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L5 7l3.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        앱 분석으로
-      </button>
-      <h1 class="page-title" id="p4-title">전체 리뷰</h1>
-    </div>
-    <span style="font-size:13px;color:var(--label-assistive)" id="p4-total-count"></span>
-  </div>
-
-  <div class="card mb-20" style="padding:16px 20px" id="p4-filter-bar"></div>
-
-  <div class="card" style="padding:0" id="p4-review-table">
-    <div class="table-wrap"><table><thead><tr>
-      <th style="padding-left:24px;width:60px">감성</th><th style="width:80px">카테고리</th><th style="width:50px">스토어</th><th>작성자</th><th>버전</th><th>별점</th><th>리뷰 본문</th><th style="padding-right:24px">작성일</th>
-    </tr></thead><tbody id="p4-review-tbody"></tbody></table></div>
-    <div style="padding:16px 24px;display:flex;justify-content:center;gap:8px" id="p4-pagination"></div>
-  </div>
-</section>
-
-<!-- ═══════ P5. 어피니티 분석 ═══════ -->
-<section class="page-section" id="p5">
-  <div class="affinity-header">
-    <button class="btn btn-ghost btn-sm" onclick="goBackToP3()" style="color:var(--label-alt)">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L5 7l3.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      앱 분석으로
-    </button>
-    <h1 class="page-title" id="p5-title">어피니티 분석</h1>
-    <div class="btn-group">
-      <button class="btn btn-outline btn-sm" onclick="startAutoAffinity()">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5v3M8 11.5v3M1.5 8h3M11.5 8h3M3.4 3.4l2.1 2.1M10.5 10.5l2.1 2.1M3.4 12.6l2.1-2.1M10.5 5.5l2.1-2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        자동 분석
-      </button>
-      <button class="btn btn-outline btn-sm" onclick="downloadAffinityText()">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M4 7l4 4 4-4M3 13h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        리뷰 텍스트
-      </button>
-    </div>
-  </div>
-
-  <!-- Summary KPIs -->
-  <div class="affinity-summary" id="p5-summary" style="display:none"></div>
-
-  <!-- Breadcrumb -->
-  <div class="affinity-breadcrumb" id="p5-breadcrumb" style="display:none">
-    <a onclick="affinityZoomOut()">전체</a>
-  </div>
-
-  <!-- 2컬럼: 트리맵 + 카테고리 사이드바 -->
-  <div class="affinity-layout" id="p5-layout" style="display:none">
-    <div>
-      <div style="position:relative">
-        <div class="affinity-container" id="p5-treemap"></div>
-        <button class="affinity-zoom-out-btn" id="p5-zoom-out" style="display:none" onclick="affinityZoomOut()">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L5 7l3.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          전체 맵으로 돌아가기
-        </button>
+  <!-- 탭: 별점·배포 추이 (#5) -->
+  <div class="p3-tab-panel" data-panel="trend">
+    <div class="card mb-20">
+      <div class="card-header">
+        <div class="section-title" style="margin-bottom:0">별점 추이 · 배포 시점</div>
+        <span style="font-size:12px;color:var(--label-assistive)">주간 평균 · 세로선=버전 배포(추정)</span>
       </div>
-      <div class="affinity-legend" id="p5-legend"></div>
+      <div style="position:relative;height:320px"><canvas id="chart-trend-deploy"></canvas></div>
+      <div style="font-size:12px;color:var(--label-assistive);margin-top:10px">※ 배포 시점은 해당 버전이 리뷰에 처음 등장한 날짜 기준 근사치입니다.</div>
     </div>
-    <div class="affinity-sidebar" id="p5-sidebar"></div>
+    <div class="card">
+      <div class="section-title" style="margin-bottom:12px">최근 버전별 평균 별점</div>
+      <div class="table-wrap"><table><thead><tr>
+        <th style="padding-left:24px">버전</th><th>배포(추정)</th><th>리뷰 수</th><th style="padding-right:24px">평균 별점</th>
+      </tr></thead><tbody id="trend-version-tbody"></tbody></table></div>
+    </div>
   </div>
 
-  <!-- Empty state -->
-  <div class="affinity-empty" id="p5-empty">
-    <div class="affinity-empty-icon">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="8" stroke="var(--label-assistive)" stroke-width="1.5"/><circle cx="11" cy="12" r="2.5" stroke="var(--label-assistive)" stroke-width="1.2"/><circle cx="17.5" cy="11" r="1.8" stroke="var(--label-assistive)" stroke-width="1.2"/><circle cx="14.5" cy="17" r="2" stroke="var(--label-assistive)" stroke-width="1.2"/></svg>
+  <!-- 탭: 기간별 분석 (#3-2) -->
+  <div class="p3-tab-panel" data-panel="period">
+    <div class="card mb-20">
+      <div class="period-controls">
+        <div class="filter-group"><span class="filter-label">기간</span>
+          <button class="chip active" onclick="setPeriodWindow(this,1)">특정일</button>
+          <button class="chip" onclick="setPeriodWindow(this,7)">7일</button>
+          <button class="chip" onclick="setPeriodWindow(this,30)">30일</button>
+        </div>
+        <div class="filter-sep"></div>
+        <div class="filter-group"><span class="filter-label">기준일</span>
+          <input type="date" id="period-date" class="period-date-input" onchange="renderP3Period()">
+        </div>
+        <span id="period-summary" style="font-size:13px;color:var(--label-alt);margin-left:auto"></span>
+      </div>
     </div>
-    <h3>어피니티 분석 결과가 없습니다</h3>
-    <p>리뷰를 클러스터링하여 보로노이 트리맵으로 시각화합니다.</p>
-    <button class="btn btn-primary btn-sm" onclick="startAutoAffinity()" style="gap:6px">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8l3.5-3.5M3 8l3.5 3.5M13 8l-3.5-3.5M13 8l-3.5 3.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      분석 시작
+    <div id="period-result"></div>
+  </div>
+
+  <!-- 탭: 주요 리뷰 (#4) -->
+  <div class="p3-tab-panel" data-panel="highlights">
+    <div id="highlights-result"></div>
+  </div>
+
+  <!-- 탭: 전체 리뷰 (수집한 원본 리뷰) -->
+  <div class="p3-tab-panel" data-panel="reviews">
+    <div class="flex-between mb-20">
+      <div class="section-title" style="margin-bottom:0">수집한 전체 리뷰</div>
+      <span style="font-size:13px;color:var(--label-assistive)" id="p4-total-count"></span>
+    </div>
+    <div class="card mb-20" style="padding:16px 20px" id="p4-filter-bar"></div>
+    <div class="card" style="padding:0" id="p4-review-table">
+      <div class="table-wrap"><table><thead><tr>
+        <th style="padding-left:24px;width:60px">감성</th><th style="width:80px">카테고리</th><th style="width:50px">스토어</th><th>작성자</th><th>버전</th><th>별점</th><th>리뷰 본문</th><th style="padding-right:24px">작성일</th>
+      </tr></thead><tbody id="p4-review-tbody"></tbody></table></div>
+      <div style="padding:16px 24px;display:flex;justify-content:center;gap:8px" id="p4-pagination"></div>
+    </div>
+  </div>
+
+  <!-- 탭: 플랫폼별 (#3-1) — iOS 연동 대기 -->
+  <div class="p3-tab-panel" data-panel="platform">
+    <div class="card" style="text-align:center;padding:56px 24px">
+      <div style="font-size:40px;margin-bottom:12px;opacity:0.5">📱</div>
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">플랫폼별 분석은 iOS 데이터 연동 후 활성화됩니다</div>
+      <div style="font-size:13px;color:var(--label-alt);line-height:20px;max-width:520px;margin:0 auto">
+        현재 수집된 리뷰는 Google Play(Android) 뿐입니다. Apple 레거시 RSS 피드가 폐쇄되어<br>
+        App Store Connect API 연동이 필요합니다. 연동 시 Android/iOS 플랫폼 고유 불만 토픽을 분리해 보여줍니다.
+      </div>
+      <div id="platform-store-stat" style="margin-top:16px;font-size:13px;color:var(--label-assistive)"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 자동화 현황 ═══════ -->
+<section class="page-section" id="automation">
+  <div class="flex-between mb-24">
+    <div>
+      <h1 class="page-title">자동화 현황</h1>
+      <p class="page-desc">매일 새벽 자동으로 리뷰 수집 → 카테고리 분류 → 대시보드 갱신이 수행됩니다</p>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="runDailyJob()" style="gap:5px">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 10v3h3M14 6V3h-3M2 6.5A5.5 5.5 0 0 1 12.8 4M14 9.5A5.5 5.5 0 0 1 3.2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      지금 수동 실행
     </button>
   </div>
+  <div id="automation-body"><div class="rp-loading">불러오는 중…</div></div>
 </section>
 
 </div>
@@ -740,6 +1101,192 @@ table tbody tr.highlight td{background:rgba(0,102,255,0.03)}
 <script>
 const APPS_DATA = {{ data.apps | tojson }};
 const PRIMARY_APP = "{{ data.primary_app }}";
+const TVING = {{ tving | tojson }};
+const APP_CFG = {{ data.apps_config | tojson }};
+
+// 리뷰 → 스토어 리뷰 페이지 URL (스토어는 개별 리뷰 permalink를 제공하지 않아 앱 리뷰 페이지로 이동)
+function storeUrl(store, appKey) {
+  const cfg = APP_CFG[appKey] || {};
+  if (store === 'APPLE' && cfg.app_store_id) return `https://apps.apple.com/kr/app/id${cfg.app_store_id}?see-all=reviews`;
+  if (cfg.package_id) return `https://play.google.com/store/apps/details?id=${cfg.package_id}&hl=ko`;
+  return '';
+}
+function openStore(store, appKey) {
+  const u = storeUrl(store, appKey);
+  if (u) window.open(u, '_blank', 'noopener');
+}
+
+// ── 데일리 리포트 (액션 브리핑) ──
+let rpTrendChart = null;
+let reportPeriod = 7;
+let rpReport = null;
+
+// 카테고리 행 클릭 → 해당 카테고리 전체 리뷰 패널 (트리맵 상세 패널 재사용)
+function openRpCat(type, idx) {
+  const c = rpReport && rpReport[type] && rpReport[type][idx];
+  if (!c) return;
+  openAffinityDetail({ name: c.label, items: c.items || [] });
+}
+
+async function loadDailyReport(key) {
+  const sel = document.getElementById('report-app-select');
+  if (sel && sel.value !== key) sel.value = key;
+  const body = document.getElementById('report-body');
+  body.innerHTML = '<div class="rp-loading">리포트 생성 중…</div>';
+  let d;
+  try { d = await (await fetch(`/api/daily-report/${key}?period=${reportPeriod}`)).json(); }
+  catch (e) { body.innerHTML = '<div class="rp-loading">리포트를 불러오지 못했습니다.</div>'; return; }
+  renderDailyReport(d);
+}
+
+function setReportPeriod(p) {
+  reportPeriod = p;
+  document.querySelectorAll('#report-period .chip').forEach(c => c.classList.toggle('active', +c.dataset.p === p));
+  loadDailyReport(document.getElementById('report-app-select').value);
+}
+
+function rpDelta(val, mode) {
+  if (val === 0 || val === undefined || isNaN(val)) return `<span class="rp-delta flat">─</span>`;
+  const up = val > 0, sign = up ? '+' : '';
+  let cls = mode === 'rating' ? (up ? 'good' : 'bad') : mode === 'neg' ? (up ? 'bad' : 'good') : (up ? 'up' : 'down');
+  return `<span class="rp-delta ${cls}">${up ? '▲' : '▼'} ${sign}${val}</span>`;
+}
+const rpStars = s => `<span class="stars">${'★'.repeat(s)}${'☆'.repeat(5 - s)}</span>`;
+function rpVer(v) { return v ? `<span class="rp-ver">v${esc(v)}</span>` : ''; }
+function rpRvCard(r) {
+  return `<div class="rp-rv">
+    <div class="rp-rv-meta">${rpStars(r.score)}<span class="rp-rv-thumb">공감 ${r.thumbs}</span>${rpVer(r.version)}<span class="rp-rv-date">${r.date}</span></div>
+    <div class="rp-rv-text">${esc(r.content)}</div></div>`;
+}
+
+function renderDailyReport(d) {
+  const anchorEl = document.getElementById('report-anchor');
+  const body = document.getElementById('report-body');
+  if (!d.available) {
+    anchorEl.textContent = '';
+    body.innerHTML = `<div class="card"><div class="rp-empty">이 앱은 수집된 리뷰가 없어 리포트를 만들 수 없습니다.</div></div>`;
+    return;
+  }
+  const h = d.header, L = h.period_label;
+  rpReport = d;
+  anchorEl.textContent = `기준일 ${h.anchor} · ${L}`;
+
+  // B. 신규·급증 이슈 (행 클릭 → 전체 리뷰)
+  const issueRows = d.issues.map((i, idx) => {
+    const kind = i.kind === 'new'
+      ? '<span class="rp-kind new">신규</span>'
+      : '<span class="rp-kind surge">급증</span>';
+    const metric = i.kind === 'new' ? `${i.count}건 (이전 ${i.prev})` : `${i.count}건 · ${i.ratio}배`;
+    return `<div class="rp-row rp-click" onclick="openRpCat('issues',${idx})">
+      <div class="rp-row-top">${kind}<span class="rp-row-label">${esc(i.label)}</span>${rpVer(i.version)}<span class="rp-row-cnt">${metric} ›</span></div>
+      ${i.rep ? `<div class="rp-rep">${esc(i.rep)}</div>` : ''}</div>`;
+  }).join('') || '<div class="rp-empty">평소 대비 새로 등장하거나 급증한 이슈가 없습니다.</div>';
+
+  // C. 개선 우선순위 (행 클릭 → 전체 리뷰)
+  const priRows = d.priorities.map((p, idx) => `
+    <div class="rp-row rp-click" onclick="openRpCat('priorities',${idx})"><div class="rp-row-top">
+      <span class="rp-sev s${p.rank}">${p.severity}</span><span class="rp-row-label">${esc(p.label)}</span>${rpVer(p.version)}
+      <span class="rp-row-cnt">${p.count}건 ›</span></div>
+      ${p.rep ? `<div class="rp-rep">${esc(p.rep)}</div>` : ''}</div>`).join('') || '<div class="rp-empty">부정 리뷰 없음</div>';
+
+  // D. 배포 영향
+  const depRows = d.deploy.map(v => {
+    const drop = v.drop === null ? '' : (v.drop > 0 ? `<span class="rp-dep-drop good">▲+${v.drop}</span>` : `<span class="rp-dep-drop bad">▼${v.drop}</span>`);
+    return `<div class="rp-dep ${v.warn ? 'warn' : ''}"><span class="rp-dep-ver">v${esc(v.version)}</span>
+      <span class="rp-dep-date">${v.first}</span><span class="rp-dep-n">${v.n}건</span>
+      <span class="rp-dep-avg">★${v.avg} ${drop}</span></div>`;
+  }).join('') || '<div class="rp-empty">버전 정보 없음</div>';
+
+  // E. 경쟁사 대비
+  const v = d.versus;
+  const versusHtml = v ? `
+    <div class="rp-vs-row"><span class="rp-vs-k">평균 별점</span>
+      <span class="rp-vs-self ${v.avg < v.comp_avg ? 'bad' : 'good'}">${v.avg}</span>
+      <span class="rp-vs-vs">vs 경쟁 ${v.comp_avg}</span></div>
+    <div class="rp-vs-row"><span class="rp-vs-k">부정 비율</span>
+      <span class="rp-vs-self ${v.neg > v.comp_neg ? 'bad' : 'good'}">${v.neg}%</span>
+      <span class="rp-vs-vs">vs 경쟁 ${v.comp_neg}%</span></div>
+    <div class="rp-vs-note">${v.avg < v.comp_avg || v.neg > v.comp_neg ? '경쟁 OTT 평균보다 나쁨 — 티빙 고유 이슈 점검 필요' : '경쟁 평균 수준'}</div>`
+    : '<div class="rp-empty">경쟁 데이터 없음</div>';
+
+  // F. 꼭 볼 리뷰
+  const hl = d.highlights;
+  const hlBlock = (title, arr, empty) => `<div class="rp-hl-col">
+    <div class="rp-hl-h">${title}</div>${arr.length ? arr.map(rpRvCard).join('') : `<div class="rp-empty">${empty}</div>`}</div>`;
+
+  const pf = d.platform;
+
+  body.innerHTML = `
+    <div class="rp-banner">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 1.5l2.4 4.9 5.4.8-3.9 3.8.9 5.3L10 13.9 5.2 16.3l.9-5.3L2.2 7.2l5.4-.8L10 1.5z" fill="currentColor"/></svg>
+      <span class="rp-banner-txt">${esc(d.comment)}</span>
+    </div>
+
+    <div class="rp-kpis">
+      <div class="card card-sm"><div class="card-title">신규 리뷰 (${L})</div><div class="kpi-value">${h.count.toLocaleString()}${rpDelta(h.count_delta, 'review')}</div></div>
+      <div class="card card-sm"><div class="card-title">평균 별점 (${L})</div><div class="kpi-value">${h.avg}${rpDelta(+(h.avg - h.avg_prev).toFixed(2), 'rating')}</div></div>
+      <div class="card card-sm"><div class="card-title">부정 비율 (${L})</div><div class="kpi-value" style="color:var(--status-negative)">${h.neg}%${rpDelta(h.neg - h.neg_prev, 'neg')}</div></div>
+    </div>
+
+    ${d.category_stale ? `<div class="rp-stale">⚠ 카테고리 분석 기준 <b>${d.category_basis}</b> — 최신 리뷰 미분류. '리뷰 현황'에서 자동 분석 재실행 시 갱신됩니다.</div>` : ''}
+
+    <div class="card mb-20">
+      <div class="rp-sec-title"><span class="rp-num" style="background:rgba(255,66,66,0.12);color:var(--status-negative)">🔥</span>신규·급증 이슈 <span style="font-size:12px;font-weight:500;color:var(--label-assistive)">${L} · 평소 대비</span></div>
+      ${issueRows}
+    </div>
+
+    <div class="rp-grid2">
+      <div class="card"><div class="rp-sec-title"><span class="rp-num">①</span>개선 우선순위 (수정할 것)</div>${priRows}</div>
+      <div class="card"><div class="rp-sec-title"><span class="rp-num">②</span>경쟁사 대비</div>${versusHtml}</div>
+    </div>
+
+    <div class="card mb-20">
+      <div class="rp-sec-title"><span class="rp-num">③</span>배포 영향 <span style="font-size:12px;font-weight:500;color:var(--label-assistive)">버전별 평점 · 직전 대비 하락</span></div>
+      ${depRows}
+    </div>
+
+    <div class="card mb-20">
+      <div class="rp-sec-title"><span class="rp-num">④</span>꼭 볼 리뷰</div>
+      <div class="rp-hl-grid">
+        ${hlBlock('가장 공감받은 불만', hl.neg, '없음')}
+        ${hlBlock('타사 비교 언급', hl.comp, '없음')}
+        ${hlBlock('버그 신고 (버전)', hl.bug, '없음')}
+      </div>
+    </div>
+
+    <div class="rp-grid2">
+      <div class="card"><div class="rp-sec-title"><span class="rp-num">⑤</span>최근 14일 추이</div>
+        <div style="position:relative;height:200px"><canvas id="rp-trend"></canvas></div></div>
+      <div class="card"><div class="rp-sec-title"><span class="rp-num">⑥</span>플랫폼별</div>
+        <div class="rp-plat">
+          <div class="rp-plat-card"><div class="rp-plat-name">Android</div><div class="rp-plat-val">${pf.play.toLocaleString()}</div></div>
+          <div class="rp-plat-card muted"><div class="rp-plat-name">iOS</div><div class="rp-plat-val">${pf.apple.toLocaleString()}</div></div>
+        </div>
+        ${!pf.ios_available ? '<div class="rp-empty" style="padding:12px 0 0">iOS 미수집 — ASC 연동 시 활성화</div>' : ''}</div>
+    </div>`;
+
+  // ⑤ 추이 차트
+  const t = d.trend14;
+  if (rpTrendChart) rpTrendChart.destroy();
+  rpTrendChart = new Chart(document.getElementById('rp-trend'), {
+    data: {
+      labels: t.map(x => x.date.slice(5)),
+      datasets: [
+        { type: 'bar', label: '리뷰 수', data: t.map(x => x.count), backgroundColor: 'rgba(0,102,255,0.18)', borderRadius: 4, yAxisID: 'y' },
+        { type: 'line', label: '평균 별점', data: t.map(x => x.avg || null), borderColor: '#0066FF', backgroundColor: 'transparent', borderWidth: 2, tension: 0.35, pointRadius: 0, pointHoverRadius: 4, spanGaps: true, yAxisID: 'y1' },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 14, font: { size: 11 } } } },
+      scales: {
+        x: { ...noGrid, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 7, font: { size: 10 } } },
+        y: { ...lightGrid, beginAtZero: true, position: 'left' },
+        y1: { position: 'right', min: 1, max: 5, ticks: { stepSize: 1 }, grid: { display: false } },
+      }
+    }
+  });
+}
 
 // ── Nav ──
 document.querySelectorAll('.sidebar-nav a').forEach(link => {
@@ -750,7 +1297,10 @@ document.querySelectorAll('.sidebar-nav a').forEach(link => {
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
     document.getElementById(link.dataset.page).classList.add('active');
     window.scrollTo(0, 0);
+    if (link.dataset.page === 'report') loadDailyReport(document.getElementById('report-app-select').value);
+    if (link.dataset.page === 'p1') initP1Charts();
     if (link.dataset.page === 'p2') initP2Charts();
+    if (link.dataset.page === 'automation') loadAutomation();
     if (link.dataset.page === 'p3') {
       if (link.dataset.app) {
         document.getElementById('p3-app-select').value = link.dataset.app;
@@ -767,54 +1317,131 @@ Chart.defaults.color = 'rgba(55,56,60,0.28)';
 const noGrid = { grid: { display: false }, border: { display: false } };
 const lightGrid = { grid: { color: 'rgba(112,115,124,0.08)', drawBorder: false }, border: { display: false } };
 
-// ── P2 Charts ──
+// ── P1 티빙 대시보드 Charts ──
+let p1Init = false;
+function initP1Charts() {
+  if (p1Init) return; p1Init = true;
+  const BLUE = '#0066FF', GRAY = 'rgba(180,183,190,0.4)', RED = '#FF4242';
+  const LABEL = '#171719'; // --label-normal: 카테고리명 가독성 확보
+
+  // ② 경쟁 포지셔닝 (가로 막대, 티빙 강조)
+  const pos = TVING.positioning;
+  new Chart(document.getElementById('chart-positioning'), {
+    type: 'bar',
+    data: { labels: pos.map(p => p.name), datasets: [{
+      data: pos.map(p => p.avg_score),
+      backgroundColor: pos.map(p => p.is_tving ? BLUE : GRAY),
+      borderRadius: 6, barPercentage: 0.7,
+    }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: c => `평균 ${c.parsed.x}점` } } },
+      scales: { x: { ...lightGrid, min: 0, max: 5, ticks: { stepSize: 1 } },
+        y: { ...noGrid, ticks: { color: LABEL, font: { size: 12, weight: '600' } } } } }
+  });
+
+  // ⑤ 평점 추이 (티빙 vs 경쟁사 평균)
+  const rt = TVING.rating_trend;
+  new Chart(document.getElementById('chart-rating-trend'), {
+    type: 'line',
+    data: { labels: rt.months, datasets: [
+      { label: '티빙', data: rt.tving, borderColor: BLUE, backgroundColor: 'rgba(0,102,255,0.08)',
+        borderWidth: 2.5, tension: 0.35, fill: true, pointRadius: 0, pointHoverRadius: 4, spanGaps: true },
+      { label: '경쟁사 평균', data: rt.competitor_avg, borderColor: 'rgba(120,123,130,0.7)',
+        borderWidth: 2, borderDash: [5, 4], tension: 0.35, fill: false, pointRadius: 0, pointHoverRadius: 4, spanGaps: true },
+    ] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'line', padding: 16, font: { size: 11 } } } },
+      scales: { x: { ...noGrid, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 6, font: { size: 10 } } },
+        y: { ...lightGrid, min: 1, max: 5, ticks: { stepSize: 1 } } } }
+  });
+
+  // ③ 불만 카테고리 분포 (가로 막대, 상위 8)
+  const comp = TVING.complaints.slice(0, 8);
+  new Chart(document.getElementById('chart-complaints'), {
+    type: 'bar',
+    data: { labels: comp.map(c => c.label), datasets: [{
+      data: comp.map(c => c.count),
+      backgroundColor: comp.map((_, i) => i === 0 ? RED : 'rgba(255,66,66,' + (0.55 - i * 0.05) + ')'),
+      borderRadius: 5, barPercentage: 0.78,
+    }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: c => `${c.parsed.x}건 (${comp[c.dataIndex].pct}%)` } } },
+      scales: { x: { ...lightGrid, beginAtZero: true },
+        y: { ...noGrid, ticks: { color: LABEL, font: { size: 12, weight: '600' } } } } }
+  });
+}
+
+// ── P2 경쟁사 벤치마크 Charts ──
 let p2Init = false;
 function initP2Charts() {
   if (p2Init) return; p2Init = true;
-  const names = APPS_DATA.map(a => a.name);
+  const BLUE = '#0066FF', GRAY = 'rgba(120,123,130,0.35)', LABEL = '#171719';
+  const STAR_COLORS = ['#FF4242', '#FF9200', '#FFD000', '#7EB3FF', '#0066FF'];
+  const cmp = TVING.compare;
+  const apps = cmp.apps;
+  const names = apps.map(a => a.name);
 
+  // 평균 별점 비교 (가로 막대, 티빙 강조)
   new Chart(document.getElementById('chart-cmp-score'), {
-    type:'bar',
-    data:{ labels:names, datasets:[{ data:APPS_DATA.map(a=>a.avg_score), backgroundColor:APPS_DATA.map(a=>a.key===PRIMARY_APP?'#7EB3FF':'rgba(180,183,190,0.25)'), borderRadius:6, barPercentage:0.6 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:noGrid, y:{...lightGrid,min:0,max:5,ticks:{stepSize:1}}} }
+    type: 'bar',
+    data: { labels: names, datasets: [{
+      data: apps.map(a => a.avg_score),
+      backgroundColor: apps.map(a => a.is_tving ? BLUE : GRAY),
+      borderRadius: 6, barPercentage: 0.7,
+    }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `평균 ${c.parsed.x}점` } } },
+      scales: { x: { ...lightGrid, min: 0, max: 5, ticks: { stepSize: 1 } },
+        y: { ...noGrid, ticks: { color: LABEL, font: { size: 12, weight: '600' } } } } }
   });
 
-  new Chart(document.getElementById('chart-cmp-pos'), {
-    type:'bar',
-    data:{ labels:names, datasets:[{ data:APPS_DATA.map(a=>a.pos_pct), backgroundColor:APPS_DATA.map(a=>a.key===PRIMARY_APP?'#7EDBA6':'rgba(180,183,190,0.25)'), borderRadius:6, barPercentage:0.6 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:noGrid, y:{...lightGrid,min:0,max:100,ticks:{stepSize:25,callback:v=>v+'%'}}} }
+  // 별점 분포 비교 (100% 누적 가로 막대)
+  new Chart(document.getElementById('chart-cmp-stars'), {
+    type: 'bar',
+    data: { labels: names, datasets: STAR_COLORS.map((color, i) => ({
+      label: `${i + 1}★`,
+      data: apps.map(a => a.star_pct[i]),
+      backgroundColor: color, barPercentage: 0.8, categoryPercentage: 0.85,
+    })) },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 12, font: { size: 11 } } },
+        tooltip: { callbacks: { label: c => `${c.dataset.label} ${c.parsed.x}%` } } },
+      scales: { x: { ...lightGrid, stacked: true, min: 0, max: 100, ticks: { callback: v => v + '%' } },
+        y: { ...noGrid, stacked: true, ticks: { color: LABEL, font: { size: 12, weight: '600' } } } } }
   });
 
-  // Category compare placeholder
-  const allCats = [...new Set(APPS_DATA.flatMap(a=>a.top_neg_cats||[]))].slice(0,5);
-  if (allCats.length) {
-    const primary = APPS_DATA.find(a=>a.key===PRIMARY_APP);
-    const others = APPS_DATA.filter(a=>a.key!==PRIMARY_APP);
-    new Chart(document.getElementById('chart-cmp-cat'), {
-      type:'bar',
-      data:{ labels:allCats, datasets:[
-        { label:primary?primary.name:'담당', data:allCats.map(c=>(primary?.top_neg_cats||[]).includes(c)?1:0), backgroundColor:'#7EB3FF', borderRadius:4, barPercentage:0.7 },
-        { label:'경쟁앱', data:allCats.map(c=>others.filter(a=>(a.top_neg_cats||[]).includes(c)).length), backgroundColor:'rgba(180,183,190,0.3)', borderRadius:4, barPercentage:0.7 },
-      ] },
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{usePointStyle:true,pointStyle:'circle',padding:16,font:{size:11}}}}, scales:{x:noGrid, y:{...lightGrid}} }
-    });
-  }
+  // 불만 카테고리 비교 패널 (어피니티 보유 앱)
+  const panel = cmp.complaint_compare.map(app => {
+    const maxPct = Math.max(...app.top.map(t => t.pct), 1);
+    const rows = app.top.map(t => `
+      <div class="cmp-cat">
+        <div class="cmp-cat-top"><span class="cmp-cat-label">${esc(t.label)}</span><span class="cmp-cat-pct">${t.pct}%</span></div>
+        <div class="cmp-cat-track"><div class="cmp-cat-fill" style="width:${Math.round(t.pct / maxPct * 100)}%"></div></div>
+      </div>`).join('');
+    return `<div class="cmp-col ${app.is_tving ? 'cmp-col-tving' : ''}">
+      <div class="cmp-col-head">${app.is_tving ? '<span style="color:var(--primary)">●</span>' : '<span style="color:var(--label-assistive)">●</span>'} ${esc(app.name)}</div>
+      ${rows}</div>`;
+  }).join('');
+  document.getElementById('cmp-complaints').innerHTML = panel ||
+    '<div style="color:var(--label-assistive);font-size:13px;padding:20px">어피니티 분석 데이터가 있는 앱이 없습니다</div>';
 
-  // Summary
-  const primary = APPS_DATA.find(a=>a.key===PRIMARY_APP);
-  if (!primary) return;
-  const avgScore = APPS_DATA.reduce((s,a)=>s+a.avg_score,0)/APPS_DATA.length;
-  const avgPos = APPS_DATA.reduce((s,a)=>s+a.pos_pct,0)/APPS_DATA.length;
-  let strengths=[], weaknesses=[];
-  if(primary.avg_score>=avgScore) strengths.push(`평균 별점 ${primary.avg_score}점 (전체 평균 ${avgScore.toFixed(1)}점 대비 우수)`);
-  else weaknesses.push(`평균 별점 ${primary.avg_score}점 (전체 평균 ${avgScore.toFixed(1)}점 대비 열위)`);
-  if(primary.pos_pct>=avgPos) strengths.push(`긍정 비율 ${primary.pos_pct}% (전체 평균 ${avgPos.toFixed(0)}% 대비 우수)`);
-  else weaknesses.push(`긍정 비율 ${primary.pos_pct}% (전체 평균 ${avgPos.toFixed(0)}% 대비 열위)`);
+  // 비교 요약
+  const t = apps.find(a => a.is_tving);
+  const comp = apps.filter(a => !a.is_tving);
+  const mean = arr => Math.round(arr.reduce((s, x) => s + x, 0) / arr.length);
+  const cPos = mean(comp.map(a => a.pos_pct));
+  const c1 = mean(comp.map(a => a.star_pct[0]));
+  let strong = [], weak = [];
+  (t.avg_score >= cmp.competitor_avg ? strong : weak).push(`평균 별점 ${t.avg_score} — 경쟁 평균 ${cmp.competitor_avg} 대비 ${(t.avg_score - cmp.competitor_avg).toFixed(2)} (${apps.length}개 중 ${t.rank}위)`);
+  (t.pos_pct >= cPos ? strong : weak).push(`긍정 비율 ${t.pos_pct}% — 경쟁 평균 ${cPos}% 대비 ${t.pos_pct - cPos >= 0 ? '+' : ''}${t.pos_pct - cPos}%p`);
+  (t.star_pct[0] <= c1 ? strong : weak).push(`1점 리뷰 ${t.star_pct[0]}% — 경쟁 평균 ${c1}% 대비 ${t.star_pct[0] - c1 >= 0 ? '+' : ''}${t.star_pct[0] - c1}%p`);
   document.getElementById('cmp-summary').innerHTML = `
-    <div class="card card-sm summary-card-good"><div class="card-title">${primary.name} 강점 (vs 경쟁 앱)</div>
-      <ul class="summary-list">${strengths.length?strengths.map(s=>`<li>${s}</li>`).join(''):'<li style="color:var(--label-alt)">뚜렷한 강점 없음</li>'}</ul></div>
-    <div class="card card-sm summary-card-bad"><div class="card-title">${primary.name} 약점 (vs 경쟁 앱)</div>
-      <ul class="summary-list">${weaknesses.length?weaknesses.map(w=>`<li>${w}</li>`).join(''):'<li style="color:var(--label-alt)">뚜렷한 약점 없음</li>'}</ul></div>`;
+    <div class="card card-sm summary-card-good"><div class="card-title">티빙 강점 (vs 경쟁 OTT)</div>
+      <ul class="summary-list">${strong.length ? strong.map(s => `<li>${s}</li>`).join('') : '<li style="color:var(--label-alt)">전 지표 열위 — 시급한 개선 필요</li>'}</ul></div>
+    <div class="card card-sm summary-card-bad"><div class="card-title">티빙 약점 (vs 경쟁 OTT)</div>
+      <ul class="summary-list">${weak.length ? weak.map(w => `<li>${w}</li>`).join('') : '<li style="color:var(--label-alt)">뚜렷한 약점 없음</li>'}</ul></div>`;
 }
 
 // ── P3 ──
@@ -823,6 +1450,10 @@ let currentPage = 1;
 const PAGE_SIZE = 20;
 let p3Charts = {};
 
+let currentAffinity = null;
+let p3TabRendered = {};
+let periodWindow = 1;
+
 async function loadAppData() {
   const key = document.getElementById('p3-app-select').value;
   document.getElementById('p3-preview-tbody').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--label-alt)">로딩 중...</td></tr>';
@@ -830,10 +1461,365 @@ async function loadAppData() {
   currentAppData = await res.json();
   currentPage = 1;
   document.getElementById('p3-title').textContent = currentAppData.app_name + ' 분석';
-  renderP3KPIs();
-  renderP3Charts();
-  renderP3Insights();
-  renderP3Preview();
+
+  // 어피니티 데이터 (기간별 분석용) — 없으면 null
+  currentAffinity = null;
+  try {
+    const af = await fetch(`/api/affinity/${key}`);
+    if (af.ok) currentAffinity = await af.json();
+  } catch (e) { /* no affinity */ }
+
+  // 기간별 기준일: min=가장 이른 데이터, max=오늘(또는 최신 리뷰일 중 더 늦은 날), 기본값=최신 리뷰일
+  const dateInput = document.getElementById('period-date');
+  const revDates = currentAppData.results.map(r => (r.at || '').substring(0, 10)).filter(Boolean).sort();
+  let affDates = [];
+  if (currentAffinity && currentAffinity.categories) {
+    currentAffinity.categories.forEach(c => (c.subcategories || []).forEach(s => (s.items || []).forEach(it => { if (it.date) affDates.push(it.date.substring(0, 10)); })));
+    affDates.sort();
+  }
+  const _d = new Date();
+  const todayStr = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
+  const earliest = [affDates[0], revDates[0]].filter(Boolean).sort()[0];
+  const latestRev = revDates.length ? revDates[revDates.length - 1] : '';
+  const maxStr = [todayStr, latestRev].filter(Boolean).sort().pop();
+  if (earliest) dateInput.min = earliest; else dateInput.removeAttribute('min');
+  dateInput.max = maxStr || todayStr;
+  dateInput.value = latestRev || todayStr;
+
+  // 탭 상태 초기화 → 첫 탭(리뷰 현황/트리맵)부터. 나머지 탭은 표시될 때 지연 렌더.
+  p3TabRendered = {};
+  showP3Tab('affinity', true);
+}
+
+function showP3Tab(name, force) {
+  document.querySelectorAll('#p3 .p3-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('#p3 .p3-tab-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === name));
+  if (!currentAppData) return;
+  if (p3TabRendered[name] && !force) return;
+  if (name === 'affinity') loadAffinity(currentAppData.app_key);
+  else if (name === 'overview') { renderP3KPIs(); renderP3Charts(); renderP3Insights(); renderP3Preview(); }
+  else if (name === 'reviews') {
+    document.getElementById('p4-total-count').textContent = `총 ${currentAppData.results.length.toLocaleString()}건`;
+    renderP4Filters(); renderP4Reviews();
+  }
+  else if (name === 'trend') renderP3Trend();
+  else if (name === 'period') renderP3Period();
+  else if (name === 'highlights') renderP3Highlights();
+  else if (name === 'platform') renderP3Platform();
+  p3TabRendered[name] = true;
+}
+
+function setPeriodWindow(el, days) {
+  el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  periodWindow = days;
+  renderP3Period();
+}
+
+// ── #5 별점·배포 추이 ──
+let trendChart = null;
+function renderP3Trend() {
+  const results = currentAppData.results.filter(r => r.at);
+  // 버전별 최초등장일·건수·평균
+  const verInfo = {};
+  results.forEach(r => {
+    const v = r.appVersion; if (!v) return;
+    const at = r.at.substring(0, 10);
+    if (!verInfo[v]) verInfo[v] = { count: 0, first: at, sum: 0 };
+    verInfo[v].count++; verInfo[v].sum += r.score;
+    if (at < verInfo[v].first) verInfo[v].first = at;
+  });
+  const versions = Object.entries(verInfo).map(([v, x]) => ({ version: v, first: x.first, count: x.count, avg: x.sum / x.count }));
+
+  // 주간 평균 별점
+  const sorted = results.slice().sort((a, b) => a.at.localeCompare(b.at));
+  const minD = new Date(sorted[0].at.substring(0, 10)).getTime();
+  const WEEK = 7 * 86400000;
+  const bins = {};
+  sorted.forEach(r => {
+    const t = new Date(r.at.substring(0, 10)).getTime();
+    const wk = Math.floor((t - minD) / WEEK);
+    if (!bins[wk]) bins[wk] = { sum: 0, n: 0 };
+    bins[wk].sum += r.score; bins[wk].n++;
+  });
+  const points = Object.entries(bins).map(([wk, x]) => ({ x: minD + wk * WEEK + WEEK / 2, y: +(x.sum / x.n).toFixed(2) }));
+  const maxT = new Date(sorted[sorted.length - 1].at.substring(0, 10)).getTime();
+
+  // 배포 마커: 리뷰 많은 주요 버전 중 최소 간격 확보해 최대 7개 (라벨 겹침 방지)
+  const range = (maxT - minD) || 1;
+  const minGap = range / 16;
+  const candidates = versions.filter(v => v.count >= 20)
+    .map(v => ({ ...v, t: new Date(v.first).getTime() }))
+    .filter(v => v.t >= minD && v.t <= maxT)
+    .sort((a, b) => b.count - a.count); // 리뷰 많은 순으로 우선 선택
+  const markers = [];
+  candidates.forEach(v => {
+    if (markers.length >= 7) return;
+    if (markers.every(m => Math.abs(m.t - v.t) >= minGap)) markers.push(v);
+  });
+  markers.sort((a, b) => a.t - b.t);
+
+  const deployPlugin = {
+    id: 'deployLines',
+    afterDraw(chart) {
+      const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
+      ctx.save();
+      markers.forEach((m, i) => {
+        const px = x.getPixelForValue(m.t);
+        if (px < x.left || px > x.right) return;
+        const labelY = top - 4 - (i % 2) * 13; // 라벨 높이 교차로 겹침 완화
+        ctx.beginPath(); ctx.moveTo(px, labelY + 2); ctx.lineTo(px, bottom);
+        ctx.strokeStyle = 'rgba(0,102,255,0.3)'; ctx.lineWidth = 1; ctx.setLineDash([4, 3]); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#0066FF'; ctx.font = '600 10px Pretendard Variable';
+        ctx.textAlign = 'center';
+        ctx.fillText('v' + m.version, px, labelY);
+      });
+      ctx.restore();
+    }
+  };
+
+  if (trendChart) trendChart.destroy();
+  trendChart = new Chart(document.getElementById('chart-trend-deploy'), {
+    type: 'line',
+    data: { datasets: [{ label: '주간 평균 별점', data: points, borderColor: '#0066FF', backgroundColor: 'rgba(0,102,255,0.08)', borderWidth: 2.5, tension: 0.3, fill: true, pointRadius: 2, pointHoverRadius: 5 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 30 } },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { title: c => { const d = new Date(c[0].parsed.x); return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} 주`; }, label: c => `평균 ${c.parsed.y}점` } } },
+      scales: {
+        x: { type: 'linear', min: minD - WEEK, max: maxT + WEEK, grid: { display: false }, border: { display: true, color: 'var(--line-normal)' },
+          ticks: { maxTicksLimit: 7, font: { size: 10 }, color: 'rgba(55,56,60,0.4)', callback: v => { const d = new Date(v); const m = ['1','2','3','4','5','6','7','8','9','10','11','12']; return `${String(d.getFullYear()).slice(2)}.${m[d.getMonth()]}`; } } },
+        y: { ...lightGrid, min: 1, max: 5, ticks: { stepSize: 1 } }
+      }
+    },
+    plugins: [deployPlugin]
+  });
+
+  // 버전 테이블 (최근 12개)
+  const recent = versions.slice().sort((a, b) => b.first.localeCompare(a.first)).slice(0, 12);
+  document.getElementById('trend-version-tbody').innerHTML = recent.map(v => `
+    <tr><td style="padding-left:24px;font-weight:600">v${esc(v.version)}</td>
+    <td style="color:var(--label-alt)">${v.first}</td>
+    <td>${v.count.toLocaleString()}</td>
+    <td style="padding-right:24px"><span class="stars">${'★'.repeat(Math.round(v.avg))}${'☆'.repeat(5 - Math.round(v.avg))}</span> <strong>${v.avg.toFixed(2)}</strong></td></tr>`).join('')
+    || '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--label-alt)">버전 정보 없음</td></tr>';
+}
+
+// ── #3-2 기간별 분석 ──
+function renderP3Period() {
+  const baseStr = document.getElementById('period-date').value;
+  const summaryEl = document.getElementById('period-summary');
+  const resultEl = document.getElementById('period-result');
+  if (!baseStr) { resultEl.innerHTML = '<div class="card" style="text-align:center;padding:40px;color:var(--label-alt)">기준일을 선택하세요</div>'; return; }
+
+  const base = new Date(baseStr).getTime();
+  const startT = base - (periodWindow - 1) * 86400000;
+  const inRange = d => { if (!d) return false; const t = new Date(d.substring(0, 10)).getTime(); return t >= startT && t <= base; };
+  const winLabel = periodWindow === 1 ? `${baseStr}` : `${new Date(startT).toISOString().substring(0, 10)} ~ ${baseStr} (${periodWindow}일)`;
+
+  // 원본 리뷰 폴백 (어피니티 미보유 앱 또는 카테고리 분석 범위 밖 기간)
+  function rawFallback(note) {
+    const raw = currentAppData.results.filter(r => inRange(r.at)).sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+    summaryEl.textContent = `${winLabel} · ${raw.length}건`;
+    resultEl.innerHTML = `<div class="card">${note ? `<div style="font-size:13px;color:var(--label-alt);margin-bottom:12px">${note}</div>` : ''}` +
+      (raw.slice(0, 60).map(r => `<div class="period-review"><div class="pr-meta">★${r.score} · ${(r.at || '').substring(0, 10)}</div>${esc(r.content || '')}</div>`).join('')
+        || '<div style="color:var(--label-assistive);padding:20px;text-align:center">해당 기간에 리뷰가 없습니다</div>') + `</div>`;
+  }
+
+  if (!currentAffinity || !currentAffinity.categories) {
+    rawFallback('이 앱은 어피니티 카테고리 데이터가 없어 원본 리뷰를 표시합니다.');
+    return;
+  }
+
+  // 어피니티 item을 날짜로 필터 → 카테고리별 그룹
+  const cats = [];
+  currentAffinity.categories.forEach(c => {
+    const items = [];
+    (c.subcategories || []).forEach(s => (s.items || []).forEach(it => { if (inRange(it.date)) items.push(it); }));
+    if (items.length) {
+      items.sort((a, b) => (b.rating || 0) - (a.rating || 0) === 0 ? (b.date || '').localeCompare(a.date || '') : (a.rating || 0) - (b.rating || 0));
+      cats.push({ label: c.label, count: items.length, items });
+    }
+  });
+  cats.sort((a, b) => b.count - a.count);
+  const total = cats.reduce((s, c) => s + c.count, 0);
+
+  // 카테고리 분석 결과가 없는 기간(예: 최근 어피니티 미반영 구간) → 원본 리뷰 폴백
+  if (!cats.length) {
+    rawFallback('이 기간은 아직 카테고리 분석이 반영되지 않아 원본 리뷰를 표시합니다. (자동 분석을 다시 돌리면 카테고리화됩니다)');
+    return;
+  }
+  summaryEl.textContent = `${winLabel} · ${total}건 / ${cats.length}개 카테고리`;
+
+  resultEl.innerHTML = '<div class="card">' + cats.map((c, ci) => `
+    <div class="period-cat ${ci === 0 ? 'open' : ''}">
+      <div class="period-cat-head" onclick="this.parentElement.classList.toggle('open')">
+        <span class="pc-label">${esc(c.label)}</span>
+        <span class="pc-count">${c.count}건</span>
+        <svg class="pc-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="period-cat-body" style="${ci === 0 ? '' : 'display:none'}">
+        ${c.items.slice(0, 30).map(it => `<div class="period-review"><div class="pr-meta">★${it.rating} · ${(it.date || '').substring(0, 10)}</div>${esc(it.text || '')}</div>`).join('')}
+      </div>
+    </div>`).join('') + '</div>';
+  // open/close 토글 시 body 표시 동기화
+  resultEl.querySelectorAll('.period-cat-head').forEach(h => h.addEventListener('click', () => {
+    const body = h.nextElementSibling;
+    body.style.display = h.parentElement.classList.contains('open') ? '' : 'none';
+  }));
+}
+
+// ── #4 주요 리뷰 ──
+const HL_THUMB = '<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M5 14H3a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h2m0 7V7m0 7h6.3a2 2 0 0 0 2-1.7l.7-4.3a1 1 0 0 0-1-1.2H10V3.5A1.5 1.5 0 0 0 8.5 2L5 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const HL_CANON = [
+  { label: '넷플릭스', re: /넷플릭스|넷플|netflix/i },
+  { label: '웨이브', re: /웨이브|wavve/i },
+  { label: '디즈니+', re: /디즈니|disney/i },
+  { label: '왓챠', re: /왓챠|watcha/i },
+  { label: '쿠팡플레이', re: /쿠팡|coupang/i },
+  { label: '유튜브', re: /유튜브|youtube/i },
+  { label: '라프텔', re: /라프텔|laftel/i },
+];
+const HL_MARK_RE = /(넷플릭스|넷플|netflix|웨이브|wavve|디즈니|disney|왓챠|watcha|쿠팡|coupang|유튜브|youtube|라프텔|laftel)/gi;
+
+function hlStars(s) { return `<span class="stars">${'★'.repeat(s)}${'☆'.repeat(5 - s)}</span>`; }
+
+function hlCard(r, tone, opts) {
+  opts = opts || {};
+  let text = esc(r.content || '');
+  if (opts.highlight) text = text.replace(HL_MARK_RE, m => `<mark class="hl-mark">${m}</mark>`);
+  const tags = (opts.tags || []).map(t => `<span class="hlc-tag">${t}</span>`).join('');
+  const key = currentAppData.app_key;
+  const storeName = (r.store === 'APPLE') ? 'App Store' : 'Google Play';
+  return `<div class="hlc" onclick="openStore('${r.store || 'PLAY'}','${key}')" title="${storeName} 리뷰 페이지에서 보기">
+    <div class="hlc-top">
+      <span class="hlc-thumbs ${tone}">${HL_THUMB}${(r.thumbsUpCount || 0).toLocaleString()}</span>
+      ${hlStars(r.score)}${tags}
+      <span class="hlc-store">${storeName} <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M6 3h7v7M13 3L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="hlc-date">${(r.at || '').substring(0, 10)}</span>
+    </div>
+    <div class="hlc-text clamp-2" onclick="event.stopPropagation();this.classList.toggle('expanded')">${text}</div>
+  </div>`;
+}
+
+// 더보기 토글 (기본 N개만 노출 → 펼치기/접기)
+function hlMoreBtn(id, hiddenCount) {
+  if (hiddenCount <= 0) return '';
+  return `<button class="hl-more-btn" onclick="hlToggleMore('${id}', this, ${hiddenCount})">더보기 (${hiddenCount}건)</button>`;
+}
+function hlToggleMore(id, btn, n) {
+  const el = document.getElementById(id);
+  const collapsed = el.classList.toggle('collapsed');
+  btn.textContent = collapsed ? `더보기 (${n}건)` : '접기';
+}
+
+// 급증일 → 기간별 분석 탭으로 드릴다운
+function hlGoToPeriod(date) {
+  const input = document.getElementById('period-date');
+  if (input.min && date < input.min) date = input.min;
+  if (input.max && date > input.max) date = input.max;
+  input.value = date;
+  periodWindow = 1;
+  document.querySelectorAll('#p3 [data-panel="period"] .period-controls .chip').forEach((c, i) => c.classList.toggle('active', i === 0));
+  showP3Tab('period', true);
+  renderP3Period();
+}
+
+let hlComp = [];          // 타사 비교 리뷰 전체
+let hlCompFilter = '전체'; // 현재 선택된 경쟁사
+
+function renderP3Highlights() {
+  const results = currentAppData.results;
+  const selfName = currentAppData.app_name;
+  const canon = HL_CANON.filter(c => !selfName.includes(c.label.replace('+', '')));
+
+  // 최다 공감 불만 / 긍정 (상위 30건, 스크롤로 탐색)
+  const negTop = results.filter(r => r.score <= 2).sort((a, b) => (b.thumbsUpCount || 0) - (a.thumbsUpCount || 0)).slice(0, 30);
+  const posTop = results.filter(r => r.score >= 4).sort((a, b) => (b.thumbsUpCount || 0) - (a.thumbsUpCount || 0)).slice(0, 30);
+
+  // 타사 비교 리뷰 + 경쟁사별 카운트
+  hlComp = [];
+  hlCompFilter = '전체';
+  const compCount = {};
+  results.forEach(r => {
+    const hits = [...new Set(canon.filter(c => c.re.test(r.content || '')).map(c => c.label))];
+    if (hits.length) {
+      hlComp.push({ ...r, _hits: hits });
+      hits.forEach(h => compCount[h] = (compCount[h] || 0) + 1);
+    }
+  });
+  hlComp.sort((a, b) => (b.thumbsUpCount || 0) - (a.thumbsUpCount || 0));
+  const compOrder = Object.entries(compCount).sort((a, b) => b[1] - a[1]);
+
+  // 급증일 감지
+  const dayCount = {};
+  results.forEach(r => { const d = (r.at || '').substring(0, 10); if (d) dayCount[d] = (dayCount[d] || 0) + 1; });
+  const counts = Object.values(dayCount);
+  const mean = counts.reduce((s, x) => s + x, 0) / (counts.length || 1);
+  const std = Math.sqrt(counts.reduce((s, x) => s + (x - mean) ** 2, 0) / (counts.length || 1));
+  const spikes = Object.entries(dayCount).filter(([d, c]) => c >= mean + 1.8 * std && c >= 5).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const maxSpike = spikes.length ? spikes[0][1] : 1;
+
+  const empty = msg => `<div class="hl-empty">${msg}</div>`;
+  const scrollList = (id, arr, tone) => arr.length
+    ? `<div class="hl-scroll" id="${id}">${arr.map(r => hlCard(r, tone)).join('')}</div>`
+    : empty('리뷰 없음');
+
+  // 경쟁사 필터 칩
+  const fchips = `<button class="chip ${hlCompFilter === '전체' ? 'active' : ''}" onclick="setHlComp('전체')">전체 <span class="chip-n">${hlComp.length}</span></button>` +
+    compOrder.map(([nm, n]) => `<button class="chip" onclick="setHlComp('${nm}')">${nm} <span class="chip-n">${n}</span></button>`).join('');
+
+  const html = `
+  <div class="hl-section">
+    <div class="section-title" style="margin-bottom:14px">최다 공감 리뷰 <span class="count">공감(추천) 수 높은 순 · 스크롤로 더 보기</span></div>
+    <div class="hl-grid">
+      <div>
+        <div class="hl-colhead neg">가장 공감받은 불만 <span class="hl-count">${negTop.length}건</span></div>
+        ${scrollList('hl-neg', negTop, 'neg')}
+      </div>
+      <div>
+        <div class="hl-colhead pos">가장 공감받은 긍정 <span class="hl-count">${posTop.length}건</span></div>
+        ${scrollList('hl-pos', posTop, 'pos')}
+      </div>
+    </div>
+  </div>
+
+  <div class="hl-section">
+    <div class="section-title" style="margin-bottom:14px">타사 비교 언급 리뷰 <span class="count">경쟁사를 골라 비교 리뷰를 살펴보세요</span></div>
+    ${hlComp.length ? `<div class="hl-chips" id="hl-comp-chips">${fchips}</div><div id="hl-comp-list"></div>` : `<div class="card">${empty('타사를 언급한 리뷰가 없습니다')}</div>`}
+  </div>
+
+  <div class="hl-section">
+    <div class="section-title" style="margin-bottom:14px">리뷰 급증일 <span class="count">일평균 ${mean.toFixed(1)}건 대비 급증 · 클릭 시 해당일 분석</span></div>
+    ${spikes.length ? `<div class="hl-spikes">${spikes.map(([d, c]) => `<div class="hl-spike" onclick="hlGoToPeriod('${d}')">
+        <div class="spike-head"><span class="spike-date">${d}</span><span class="spike-badge">평균의 ${(c / mean).toFixed(1)}배</span></div>
+        <div class="spike-bar"><div class="spike-bar-fill" style="width:${Math.round(c / maxSpike * 100)}%"></div></div>
+        <div class="spike-count"><span><b>${c}건</b> · 일평균 ${mean.toFixed(1)}건</span><span class="spike-link">기간별 분석 ›</span></div>
+      </div>`).join('')}</div>` : `<div class="card">${empty('뚜렷한 급증일이 없습니다')}</div>`}
+  </div>`;
+  document.getElementById('highlights-result').innerHTML = html;
+  if (hlComp.length) renderHlComp();
+}
+
+function setHlComp(nm) {
+  hlCompFilter = nm;
+  document.querySelectorAll('#hl-comp-chips .chip').forEach(c => c.classList.toggle('active', c.textContent.trim().startsWith(nm)));
+  renderHlComp();
+}
+
+function renderHlComp() {
+  const list = hlCompFilter === '전체' ? hlComp : hlComp.filter(r => r._hits.includes(hlCompFilter));
+  const el = document.getElementById('hl-comp-list');
+  el.innerHTML = `<div class="hl-scroll"><div class="hl-grid">${list.map(r => hlCard(r, 'neutral', { highlight: true, tags: r._hits })).join('')}</div></div>`;
+}
+
+// ── #3-1 플랫폼별 (placeholder 통계) ──
+function renderP3Platform() {
+  const results = currentAppData.results;
+  const play = results.filter(r => r.store === 'PLAY').length;
+  const apple = results.filter(r => r.store === 'APPLE').length;
+  document.getElementById('platform-store-stat').textContent = `현재 수집: Google Play ${play.toLocaleString()}건 · App Store ${apple.toLocaleString()}건`;
 }
 
 function renderP3KPIs() {
@@ -888,7 +1874,7 @@ function renderP3Charts() {
     const kws = d.keywords.slice(0,10);
     p3Charts.kw = new Chart(document.getElementById('chart-keyword-freq'), {
       type:'bar', data:{labels:kws.map(k=>k.word),datasets:[{data:kws.map(k=>k.count),backgroundColor:kws.map(k=>k.count>kws[2].count?'#7EB3FF':'rgba(180,183,190,0.25)'),borderRadius:4,barPercentage:0.6}]},
-      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{...noGrid,ticks:{font:{size:12}}},x:{...lightGrid}}}
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{...noGrid,ticks:{color:'#171719',font:{size:12,weight:'600'}}},x:{...lightGrid}}}
     });
   }
 
@@ -1004,11 +1990,11 @@ function renderP3Preview() {
     const sentCls=r.sentiment==='positive'?'pos':'neg';
     const sentTxt=r.sentiment==='positive'?'긍정':'부정';
     const storeCls=r.store==='PLAY'?'store-play':'store-apple';
-    html+=`<tr>
+    html+=`<tr style="cursor:pointer" onclick="openStore('${r.store||'PLAY'}','${currentAppData.app_key}')" title="스토어 리뷰 페이지에서 보기">
       <td style="padding-left:24px"><span class="badge ${sentCls}">${sentTxt}</span></td>
       <td><span class="badge ${storeCls}" style="font-size:11px;height:20px;padding:0 6px">${r.store}</span></td>
       <td><span class="stars">${stars}</span></td>
-      <td><div class="review-cell" onclick="this.classList.toggle('expanded')"><div class="rv-text">${esc(r.content||'')}</div>${(r.content||'').length>60?'<span class=\"expand-hint\">더보기</span>':''}</div></td>
+      <td><div class="review-cell" onclick="event.stopPropagation();this.classList.toggle('expanded')"><div class="rv-text">${esc(r.content||'')}</div>${(r.content||'').length>60?'<span class=\"expand-hint\">더보기</span>':''}</div></td>
       <td style="padding-right:24px;white-space:nowrap;color:var(--label-alt)">${(r.at||'').substring(0,10)}</td>
     </tr>`;
   });
@@ -1017,23 +2003,11 @@ function renderP3Preview() {
 
 // ── P4 Navigation ──
 function goToReviews() {
-  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
-  document.getElementById('p4').classList.add('active');
-  document.querySelectorAll('.sidebar-nav a').forEach(l=>l.classList.remove('active'));
-  window.scrollTo(0,0);
-  document.getElementById('p4-title').textContent = currentAppData.app_name + ' 전체 리뷰';
-  document.getElementById('p4-total-count').textContent = `총 ${currentAppData.results.length.toLocaleString()}건`;
+  // 전체 리뷰는 이제 앱 상세(P3)의 탭
   currentSentFilter='';
   currentStoreFilter='';
   currentPage=1;
-  renderP4Filters();
-  renderP4Reviews();
-}
-
-function goBackToP3() {
-  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
-  document.getElementById('p3').classList.add('active');
-  document.querySelector('.sidebar-nav a[data-page="p3"]').classList.add('active');
+  showP3Tab('reviews');
   window.scrollTo(0,0);
 }
 
@@ -1130,14 +2104,14 @@ function renderP4Reviews() {
     const sentCls=r.sentiment==='positive'?'pos':'neg';
     const sentTxt=r.sentiment==='positive'?'긍정':'부정';
     const storeCls=r.store==='PLAY'?'store-play':'store-apple';
-    html+=`<tr>
+    html+=`<tr style="cursor:pointer" onclick="openStore('${r.store||'PLAY'}','${currentAppData.app_key}')" title="스토어 리뷰 페이지에서 보기">
       <td style="padding-left:24px"><span class="badge ${sentCls}">${sentTxt}</span></td>
-      <td><span style="font-size:12px;color:var(--label-alt)">${esc(r.category||'')}</span></td>
+      <td><span style="font-size:13px;font-weight:500;color:var(--label-neutral)">${esc(r.category||'')}</span></td>
       <td><span class="badge ${storeCls}" style="font-size:11px;height:20px;padding:0 6px">${r.store}</span></td>
       <td style="white-space:nowrap">${esc(r.userName||'')}</td>
       <td style="white-space:nowrap;color:var(--label-alt)">${r.appVersion?'v'+r.appVersion:''}</td>
       <td><span class="stars">${stars}</span></td>
-      <td><div class="review-cell" onclick="this.classList.toggle('expanded')"><div class="rv-text">${esc(r.content||'')}</div>${(r.content||'').length>60?'<span class=\"expand-hint\">더보기</span>':''}</div></td>
+      <td><div class="review-cell" onclick="event.stopPropagation();this.classList.toggle('expanded')"><div class="rv-text">${esc(r.content||'')}</div>${(r.content||'').length>60?'<span class=\"expand-hint\">더보기</span>':''}</div></td>
       <td style="padding-right:24px;white-space:nowrap;color:var(--label-alt)">${(r.at||'').substring(0,10)}</td>
     </tr>`;
   });
@@ -1179,6 +2153,68 @@ function downloadFile(type) {
 const TOTAL_APPS = {{ data.apps|length }};
 let refreshEvtSource = null;
 
+// 앱별 증분 새로고침 (기존 유지 + 신규 이어붙이기)
+function refreshAppData() {
+  const key = document.getElementById('p3-app-select').value;
+  const modal = document.getElementById('refresh-modal');
+  const log = document.getElementById('modal-log');
+  const bar = document.getElementById('modal-progress-bar');
+  const status = document.getElementById('modal-status');
+  const closeBtn = document.getElementById('modal-close-btn');
+
+  modal.querySelector('.modal-title').textContent = '리뷰 수집';
+  modal.style.display = 'flex';
+  log.innerHTML = '';
+  bar.style.width = '8%';
+  status.textContent = '최신 리뷰 가져오는 중…';
+  document.getElementById('modal-cancel-btn').style.display = '';
+  document.getElementById('modal-reload-btn').style.display = 'none';
+  closeBtn.style.display = 'none';
+
+  let newReviewCount = 0;
+
+  refreshEvtSource = new EventSource(`/api/refresh-app/${key}`);
+  refreshEvtSource.onmessage = function (e) {
+    const msg = e.data;
+    if (msg === '[DONE]') {
+      refreshEvtSource.close();
+      bar.style.width = '100%';
+      addLog(msg, 'done');
+      // 신규 리뷰가 있으면 해당 앱 분류(어피니티) 자동 재분석으로 이어짐
+      if (newReviewCount > 0) {
+        status.textContent = `신규 ${newReviewCount}건 — 분류 분석 이어서 실행…`;
+        setTimeout(() => {
+          document.getElementById('refresh-modal').style.display = 'none';
+          startAutoAffinity();
+        }, 900);
+      } else {
+        status.textContent = '신규 리뷰 없음 — 최신 상태';
+        showDoneState();
+      }
+      return;
+    }
+    if (msg.startsWith('[ERROR]')) {
+      refreshEvtSource.close();
+      status.textContent = '오류 발생';
+      addLog(msg, 'error');
+      showDoneState();
+      return;
+    }
+    if (msg.includes('증분:')) {
+      bar.style.width = '90%'; status.textContent = '병합 중…'; addLog(msg, 'highlight');
+      const m = msg.match(/신규\s*(\d+)\s*건/);
+      if (m) newReviewCount = parseInt(m[1], 10);
+    }
+    else if (msg.includes('->')) { bar.style.width = '95%'; addLog(msg, 'highlight'); }
+    else if (msg.includes('수집 중')) { bar.style.width = '50%'; addLog(msg, ''); }
+    else addLog(msg, '');
+  };
+  refreshEvtSource.onerror = function () {
+    refreshEvtSource.close();
+    if (bar.style.width !== '100%') { status.textContent = '연결 종료'; showDoneState(); }
+  };
+}
+
 function refreshData() {
   const modal = document.getElementById('refresh-modal');
   const log = document.getElementById('modal-log');
@@ -1187,6 +2223,7 @@ function refreshData() {
   const footer = document.getElementById('modal-footer');
   const closeBtn = document.getElementById('modal-close-btn');
 
+  modal.querySelector('.modal-title').textContent = '리뷰 수집';
   modal.style.display = 'flex';
   log.innerHTML = '';
   bar.style.width = '0%';
@@ -1267,6 +2304,135 @@ function closeRefreshModal() {
   if (refreshEvtSource) { refreshEvtSource.close(); refreshEvtSource = null; }
 }
 
+// ── 자동화 현황 ──
+const HEALTH_TXT = {
+  ok: ['정상 동작 중', 'ok'], stale: ['최근 실행 없음 (24시간 초과)', 'stale'],
+  quota: ['API 한도로 일부 미반영 — 기존 결과 유지, 다음 실행 시 자동 재개', 'partial'],
+  partial: ['마지막 실행 일부 실패', 'partial'], error: ['마지막 실행 실패', 'error'], none: ['아직 실행 이력 없음', 'none'],
+};
+function fmtDT(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function ago(iso) {
+  if (!iso) return '';
+  const s = (Date.now() - new Date(iso)) / 1000;
+  if (s < 3600) return `${Math.round(s/60)}분 전`;
+  if (s < 86400) return `${Math.round(s/3600)}시간 전`;
+  return `${Math.round(s/86400)}일 전`;
+}
+
+async function loadAutomation() {
+  const body = document.getElementById('automation-body');
+  body.innerHTML = '<div class="rp-loading">불러오는 중…</div>';
+  let d;
+  try { d = await (await fetch('/api/run-history')).json(); }
+  catch (e) { body.innerHTML = '<div class="rp-loading">불러오지 못했습니다.</div>'; return; }
+  renderAutomation(d);
+}
+
+function renderAutomation(d) {
+  const runs = d.runs || [];
+  const [htext, hcls] = HEALTH_TXT[d.health] || HEALTH_TXT.none;
+  const last = runs[0];
+  let html = `
+    <div class="auto-health">
+      <div class="auto-dot ${hcls}"></div>
+      <div class="auto-health-main">
+        <div class="auto-health-title">${htext}</div>
+        <div class="auto-health-sub">${last ? `마지막 실행: ${fmtDT(last.finished_at || last.started_at)} (${ago(last.finished_at || last.started_at)})` : '예약된 첫 실행을 기다리는 중'}</div>
+      </div>
+      <div class="auto-health-next">매일 ${String(d.scheduler_hour).padStart(2,'0')}:00 자동 실행<b>다음 ${fmtDT(d.next_run)}</b></div>
+    </div>`;
+
+  if (!runs.length) {
+    html += '<div class="rp-loading">실행 이력이 없습니다. "지금 수동 실행"으로 한 번 돌려볼 수 있어요.</div>';
+    document.getElementById('automation-body').innerHTML = html;
+    return;
+  }
+
+  for (const r of runs) {
+    const apps = (r.apps || []).map(a => {
+      if (a.collect && a.collect.error) return `<div class="auto-app"><span class="nm">${a.name}</span> <span class="er">수집 실패</span></div>`;
+      if (a.affinity && a.affinity.error) return `<div class="auto-app"><span class="nm">${a.name}</span> 신규 <span class="ng">${a.collect.new}</span> · <span class="er">분류 실패</span></div>`;
+      const nw = a.collect ? a.collect.new : 0;
+      const clf = a.affinity && a.affinity.ran ? `분류 ${a.affinity.categories}개` : '<span class="mut">분류 생략</span>';
+      const hold = a.affinity && a.affinity.published === false
+        ? ` · <span class="hold" title="${(a.affinity.note||'').replace(/"/g,'')}">⚠ 미반영</span>` : '';
+      const local = a.affinity && a.affinity.backend === 'ollama'
+        ? ` · <span class="localllm" title="Gemini 한도 소진으로 로컬 모델(Ollama) 사용 — 정확도는 참고용">🖥 로컬</span>` : '';
+      return `<div class="auto-app"><span class="nm">${a.name}</span> 신규 <span class="ng">${nw}</span> · ${clf}${hold}${local}</div>`;
+    }).join('');
+    const trig = r.trigger === 'schedule' ? '자동' : '수동';
+    const inc = (r.totals||{}).incomplete || 0;
+    const loc = (r.totals||{}).local_llm || 0;
+    html += `
+      <div class="auto-run">
+        <div class="auto-run-head">
+          <span class="auto-badge ${r.quota_limited ? 'partial' : r.status}">${r.quota_limited ? 'quota' : r.status}</span>
+          <span class="auto-run-time">${fmtDT(r.started_at)}</span>
+          <span class="auto-run-meta">${trig} · ${r.duration_sec != null ? r.duration_sec+'초' : '—'} · 신규 ${(r.totals||{}).new_reviews||0}건 · 정상 ${(r.totals||{}).apps_ok||0}/${(r.apps||[]).length}</span>
+        </div>
+        ${r.error ? `<div class="auto-app er" style="margin-bottom:8px">${r.error}</div>` : ''}
+        ${inc ? `<div class="auto-hold-note">⚠ ${inc}개 앱이 API 한도로 분류 미완료 → <b>대시보드 미반영(기존 정상 결과 유지)</b>. 한도 리셋 후 다음 실행에서 자동 재개·반영</div>` : ''}
+        ${loc ? `<div class="auto-local-note">🖥 ${loc}개 앱이 Gemini 한도 소진으로 <b>로컬 모델(Ollama)</b>로 분석됨 — 정확도는 참고용. 한도 회복 후 재분석하면 정밀 결과로 갱신됩니다</div>` : ''}
+        <div class="auto-apps">${apps}</div>
+      </div>`;
+  }
+  document.getElementById('automation-body').innerHTML = html;
+}
+
+function runDailyJob() {
+  const modal = document.getElementById('refresh-modal');
+  const log = document.getElementById('modal-log');
+  const bar = document.getElementById('modal-progress-bar');
+  const status = document.getElementById('modal-status');
+  modal.querySelector('.modal-title').textContent = '일일 자동화 실행';
+  modal.style.display = 'flex';
+  log.innerHTML = ''; bar.style.width = '6%';
+  status.textContent = '수집 → 분류 진행 중… (몇 분 걸릴 수 있어요)';
+  document.getElementById('modal-cancel-btn').style.display = '';
+  document.getElementById('modal-reload-btn').style.display = 'none';
+  document.getElementById('modal-close-btn').style.display = 'none';
+
+  let appsSeen = 0;
+  refreshEvtSource = new EventSource('/api/run-daily');
+  refreshEvtSource.onmessage = function (e) {
+    const msg = e.data;
+    if (msg === '[DONE]') {
+      refreshEvtSource.close(); refreshEvtSource = null;
+      bar.style.width = '100%'; status.textContent = '완료!';
+      addLog(msg, 'done');
+      document.getElementById('modal-cancel-btn').style.display = 'none';
+      document.getElementById('modal-close-btn').style.display = 'flex';
+      loadAutomation();
+      return;
+    }
+    if (msg.startsWith('[ERROR]')) {
+      refreshEvtSource.close(); refreshEvtSource = null;
+      status.textContent = '오류 발생'; addLog(msg, 'error');
+      document.getElementById('modal-close-btn').style.display = 'flex';
+      loadAutomation();
+      return;
+    }
+    if (msg.includes('어피니티 분석')) { appsSeen += 0.5; }
+    if (msg.includes('신규') && msg.includes('총')) { appsSeen += 0.5; }
+    bar.style.width = Math.min(8 + appsSeen / 12 * 90, 96) + '%';
+    addLog(msg, msg.includes('실패') ? 'error' : (msg.includes('완료') ? 'highlight' : ''));
+  };
+  refreshEvtSource.onerror = function () {
+    if (refreshEvtSource) { refreshEvtSource.close(); refreshEvtSource = null; }
+    if (bar.style.width !== '100%') {
+      status.textContent = '연결 종료';
+      document.getElementById('modal-close-btn').style.display = 'flex';
+      loadAutomation();
+    }
+  };
+}
+
 function goHome() {
   document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
   document.getElementById('p1').classList.add('active');
@@ -1278,7 +2444,9 @@ function goHome() {
 function goToApp(appKey) {
   document.getElementById('p3-app-select').value = appKey;
   document.querySelectorAll('.sidebar-nav a').forEach(l=>l.classList.remove('active'));
-  document.querySelector('.sidebar-nav a[data-page="p3"]').classList.add('active');
+  const navLink = document.querySelector(`.sidebar-nav a[data-page="p3"][data-app="${appKey}"]`)
+    || document.querySelector('.sidebar-nav a[data-page="p3"]');
+  if (navLink) navLink.classList.add('active');
   document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
   document.getElementById('p3').classList.add('active');
   window.scrollTo(0,0);
@@ -1291,25 +2459,62 @@ function esc(s){const d=document.createElement('div');d.textContent=s;return d.i
 // P5. 어피니티 분석 (Voronoi Treemap)
 // ═══════════════════════════════════
 
+// 여러 색을 아주 연하게(파스텔 틴트) — 부드럽고 산뜻하게, 텍스트는 진한 글씨로
 const AFFINITY_COLORS = [
-  '#7EB3FF','#7EDBA6','#FFc98A','#FF9A9A','#C4B5FD',
-  '#93C5FD','#86EFAC','#FDE68A','#FCA5A5','#DDD6FE',
-  '#67E8F9','#A7F3D0','#FDE047','#F9A8D4','#A5B4FC'
+  '#DCE9FB','#DEF3E7','#FBE7DA','#EBE3FB','#FBDDE7',
+  '#D9F1F0','#F4EFD6','#E2ECFB','#F1E3D3','#E7EAF6',
+  '#D8EDF8','#EEE1F1','#E0F0E7'
 ];
+function catColor(i, n) { return AFFINITY_COLORS[i % AFFINITY_COLORS.length]; }
+
+// 흰 배경 위 합성 명도 기준으로 흰/검정 텍스트 자동 선택 (알파 반영)
+function textColorFor(color) {
+  const c = d3.color(color);
+  if (!c) return '#15151a';
+  const { r, g, b } = c.rgb();
+  const a = (c.opacity === undefined || isNaN(c.opacity)) ? 1 : c.opacity;
+  const er = r * a + 255 * (1 - a), eg = g * a + 255 * (1 - a), eb = b * a + 255 * (1 - a);
+  const L = (0.299 * er + 0.587 * eg + 0.114 * eb) / 255;
+  return L > 0.62 ? '#15151a' : '#ffffff';
+}
 
 let affinityData = null;
 let affinityZoomed = null; // current zoomed category index or null
 
-function goToAffinity() {
-  const key = document.getElementById('p3-app-select').value;
-  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-  document.getElementById('p5').classList.add('active');
-  document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active'));
-  window.scrollTo(0, 0);
-  const appInfo = APPS_DATA.find(a => a.key === key);
-  const appName = currentAppData ? currentAppData.app_name : (appInfo ? appInfo.name : key);
-  document.getElementById('p5-title').textContent = appName + ' 어피니티 분석';
+// 어피니티(리뷰 현황) 랜딩 로드
+// 어피니티(리뷰 현황)는 이제 P3 탭 → 현재 P3에서 선택된 앱 기준
+function currentAffinityApp() {
+  const sel = document.getElementById('p3-app-select');
+  return sel ? sel.value : 'tving';
+}
+
+function loadAffinity(key) {
   loadAffinityData(key);
+  checkAffinityStale(key);
+}
+
+// 리뷰가 갱신되어 트리맵 재분석이 필요한지 확인 → 배너 표시
+async function checkAffinityStale(key) {
+  const b = document.getElementById('affinity-stale-banner');
+  if (!b) return;
+  try {
+    const st = await (await fetch(`/api/affinity-status/${key}`)).json();
+    if (st.analyzed && st.stale) {
+      const cur = (st.current_reviews || 0).toLocaleString();
+      const aff = st.affinity_reviews != null ? `분석 시점 ${st.affinity_reviews.toLocaleString()}건` : '이전 분석본';
+      b.querySelector('.asb-txt').innerHTML =
+        `리뷰가 갱신되었습니다 (현재 <b>${cur}건</b> · ${aff}). 자동 분석을 다시 실행하면 최신 리뷰가 트리맵에 반영됩니다.`;
+      b.style.display = '';
+    } else {
+      b.style.display = 'none';
+    }
+  } catch (e) { b.style.display = 'none'; }
+}
+
+// 리뷰 현황 탭으로 전환 (다른 화면에서 호출 시)
+function goToAffinity() {
+  goToApp(document.getElementById('p3-app-select').value);
+  showP3Tab('affinity');
 }
 
 async function loadAffinityData(appKey) {
@@ -1416,7 +2621,7 @@ function detectStep(msg) {
 }
 
 async function startAutoAffinity() {
-  const key = document.getElementById('p3-app-select').value;
+  const key = currentAffinityApp();
   const modal = document.getElementById('affinity-auto-modal');
   const log = document.getElementById('affinity-auto-log');
   const status = document.getElementById('affinity-auto-status');
@@ -1538,13 +2743,11 @@ function retryWithUserKey() {
 
 function closeAutoAffinityAndLoad() {
   document.getElementById('affinity-auto-modal').style.display = 'none';
-  const key = document.getElementById('p3-app-select').value;
-  loadAffinityData(key);
+  loadAffinity(currentAffinityApp());
 }
 
 function downloadAffinityText() {
-  const key = document.getElementById('p3-app-select').value;
-  window.location.href = `/api/affinity-text/${key}`;
+  window.location.href = `/api/affinity-text/${currentAffinityApp()}`;
 }
 
 
@@ -1568,7 +2771,7 @@ function renderAffinitySidebar() {
   let html = '<div class="affinity-sidebar-header">카테고리</div>';
   cats.forEach((cat, i) => {
     const count = (cat.subcategories || []).reduce((s, sub) => s + (sub.items ? sub.items.length : (sub.count || 0)), 0);
-    const color = AFFINITY_COLORS[i % AFFINITY_COLORS.length];
+    const color = catColor(i, cats.length);
     html += `<div class="affinity-cat-item" onclick="affinityZoomIn(${i})">
       <div class="dot" style="background:${color}"></div>
       <div class="cat-info">
@@ -1622,7 +2825,7 @@ function renderAffinitySummary() {
 function renderAffinityLegend() {
   const cats = affinityData.categories;
   document.getElementById('p5-legend').innerHTML = cats.map((cat, i) =>
-    `<div class="affinity-legend-item"><div class="dot" style="background:${AFFINITY_COLORS[i % AFFINITY_COLORS.length]}"></div>${cat.label}</div>`
+    `<div class="affinity-legend-item"><div class="dot" style="background:${catColor(i, cats.length)}"></div>${cat.label}</div>`
   ).join('');
 }
 
@@ -1631,8 +2834,11 @@ function renderVoronoiTreemap() {
   const container = document.getElementById('p5-treemap');
   container.innerHTML = '';
 
-  const W = container.clientWidth || 900;
-  const H = Math.max(500, Math.min(700, W * 0.55));
+  const W = Math.round(container.getBoundingClientRect().width) || 900;
+  // 레이아웃 확정 전(숨김/초기)엔 그리지 않음 → ResizeObserver가 확정 후 재렌더
+  if (W < 120) return;
+  renderVoronoiTreemap._lastW = W;
+  const H = Math.max(520, Math.min(780, Math.round(W * 0.6)));
 
   // Build hierarchy
   let rootChildren;
@@ -1705,23 +2911,25 @@ function renderVoronoiTreemap() {
     return;
   }
 
-  // Create SVG
+  // Create SVG — width:100% + preserveAspectRatio none로 컨테이너를 항상 가득 채움(좌우 여백 0).
+  // 라벨은 %좌표라 항상 셀과 싱크. 측정 폭(W)이 약간 달라도 ResizeObserver가 정확 폭으로 재렌더.
   const svg = d3.select(container).append('svg')
-    .attr('width', W).attr('height', H)
-    .attr('viewBox', `0 0 ${W} ${H}`);
+    .attr('viewBox', `0 0 ${W} ${H}`)
+    .attr('preserveAspectRatio', 'none')
+    .style('display', 'block').style('width', '100%').style('height', H + 'px');
 
   const tooltip = document.getElementById('affinity-tooltip');
   const leaves = root.leaves();
   const allNodes = root.descendants().filter(d => d.depth > 0);
 
-  // Sentiment-based fill opacity
+  // Fill: 카테고리별 연한 색. 줌인 시 감정별로 살짝 명암 차이
   function getFill(d) {
-    const baseColor = AFFINITY_COLORS[d.data.catIndex % AFFINITY_COLORS.length];
+    const base = AFFINITY_COLORS[d.data.catIndex % AFFINITY_COLORS.length];
+    if (affinityZoomed === null) return base;
     const sent = d.data.sentiment || 'neutral';
-    if (sent === 'negative') return d3.color(baseColor).darker(0.3).toString();
-    if (sent === 'positive') return d3.color(baseColor).brighter(0.2).toString();
-    if (sent === 'mixed') return d3.color(baseColor).darker(0.1).toString();
-    return baseColor;
+    if (sent === 'negative') return d3.color(base).darker(0.3).toString();
+    if (sent === 'positive') return d3.color(base).brighter(0.18).toString();
+    return base;
   }
 
   // Draw leaf cells
@@ -1753,53 +2961,61 @@ function renderVoronoiTreemap() {
     });
   }
 
-  // Labels
+  // Labels — HTML 글래스 칩 오버레이 (SVG 텍스트보다 또렷하고 깔끔)
+  const labelLayer = document.createElement('div');
+  labelLayer.className = 'vt-labels';
+  container.appendChild(labelLayer);
+
   allNodes.forEach(node => {
     if (!node.polygon || node.polygon.length < 3) return;
     const centroid = d3.polygonCentroid(node.polygon);
     if (!centroid || isNaN(centroid[0])) return;
 
     const area = Math.abs(d3.polygonArea(node.polygon));
-    const totalArea = W * H;
-    const areaPct = area / totalArea;
-
-    // Skip label if too small
-    if (areaPct < 0.015) return;
+    const areaPct = area / (W * H);
 
     const isCategory = node.depth === 1 && affinityZoomed === null;
-    const itemCount = node.value || 0;
+    const isZoomLeaf = node.children === undefined && affinityZoomed !== null;
+    if (!isCategory && !isZoomLeaf) return;
+    // 카테고리는 (미세 슬라이버 제외) 항상 표시 → 생략 최소화
+    if (isCategory && areaPct < 0.003) return;
+    if (isZoomLeaf && areaPct < 0.015) return;
 
-    if (isCategory) {
-      const fontSize = Math.max(12, Math.min(18, Math.sqrt(areaPct) * 65));
-      svg.append('text')
-        .attr('class', 'voronoi-label')
-        .attr('x', centroid[0]).attr('y', centroid[1] - 4)
-        .attr('text-anchor', 'middle')
-        .attr('font-size', fontSize + 'px')
-        .text(node.data.name);
-      svg.append('text')
-        .attr('class', 'voronoi-count')
-        .attr('x', centroid[0]).attr('y', centroid[1] + 12)
-        .attr('text-anchor', 'middle')
-        .text(itemCount.toLocaleString() + '건');
-    } else if (node.children === undefined) {
-      // Leaf (subcategory)
-      const fontSize = Math.max(11, Math.min(15, Math.sqrt(areaPct) * 55));
-      if (areaPct > 0.025) {
-        svg.append('text')
-          .attr('class', 'voronoi-label-sub')
-          .attr('x', centroid[0]).attr('y', centroid[1] - 2)
-          .attr('text-anchor', 'middle')
-          .attr('font-size', fontSize + 'px')
-          .text(node.data.name);
-        svg.append('text')
-          .attr('class', 'voronoi-count')
-          .attr('x', centroid[0]).attr('y', centroid[1] + 12)
-          .attr('text-anchor', 'middle')
-          .text(itemCount.toLocaleString() + '건');
-      }
-    }
+    const fs = isCategory
+      ? Math.max(11, Math.min(16, Math.sqrt(areaPct) * 52))
+      : Math.max(11, Math.min(15, Math.sqrt(areaPct) * 48));
+
+    const fill = getFill(node);
+    const txt = textColorFor(fill);
+    const shadow = txt === '#ffffff'
+      ? '0 1px 3px rgba(0,0,0,0.45)'
+      : '0 1px 2px rgba(255,255,255,0.55)';
+
+    const label = document.createElement('div');
+    label.className = 'vt-label';
+    label.style.left = (centroid[0] / W * 100) + '%';   // %좌표 → SVG(100%폭)와 항상 싱크
+    label.style.top = (centroid[1] / H * 100) + '%';
+    label.style.maxWidth = Math.max(72, Math.min(180, Math.sqrt(area) * 1.1)) + 'px';
+    label.style.color = txt;
+    label.style.textShadow = shadow;
+    label.innerHTML = `<span class="vt-name" style="font-size:${fs}px">${esc(node.data.name)}</span>` +
+      `<span class="vt-cnt">${(node.value || 0).toLocaleString()}건</span>`;
+    labelLayer.appendChild(label);
   });
+
+  // 컨테이너 폭 변화(초기 레이아웃 확정/리사이즈) 시 정확한 폭으로 1회 재렌더 — 좌우 여백 방지
+  if (!renderVoronoiTreemap._ro) {
+    renderVoronoiTreemap._ro = new ResizeObserver(() => {
+      if (!affinityData) return;
+      const c = document.getElementById('p5-treemap');
+      if (!c) return;
+      const w = Math.round(c.getBoundingClientRect().width);
+      if (w < 120 || Math.abs(w - (renderVoronoiTreemap._lastW || 0)) < 3) return; // 폭 동일 → 루프 방지
+      clearTimeout(renderVoronoiTreemap._rt);
+      renderVoronoiTreemap._rt = setTimeout(renderVoronoiTreemap, 100);
+    });
+    renderVoronoiTreemap._ro.observe(container);
+  }
 }
 
 function affinityZoomIn(catIndex) {
@@ -1873,10 +3089,11 @@ function openAffinityDetail(data) {
     body.innerHTML = items.map(r => {
       const score = r.rating || 0;
       const stars = '★'.repeat(score) + '☆'.repeat(5 - score);
+      const ver = r.version ? `<span class="rp-ver">v${esc(r.version)}</span>` : '';
       return `<div class="review-item">
         <div class="meta">
           <span class="stars">${stars}</span>
-          <span>${esc((r.date||'').substring(0,10))}</span>
+          <span>${esc((r.date||'').substring(0,10))}</span>${ver}
         </div>
         <div class="text">${esc(r.text||'')}</div>
       </div>`;
@@ -1892,6 +3109,26 @@ function closeAffinityDetail() {
   document.getElementById('affinity-detail').classList.remove('open');
   document.getElementById('affinity-overlay').classList.remove('open');
 }
+
+// 초기 로드: 첫 화면 = 데일리 리포트. 해시로 딥링크 지원(#p1,#p2,#p3[/탭]).
+(async function () {
+  const h = (location.hash || '').replace('#', '');
+  const [page, sub] = h.split('/');
+  if (page === 'p1' || page === 'p2') {
+    document.querySelector(`.sidebar-nav a[data-page="${page}"]`)?.click();
+    return;
+  }
+  if (page === 'p3') {
+    goToApp('{{ data.primary_app }}');
+    if (sub) {
+      for (let i = 0; i < 60 && !currentAppData; i++) await new Promise(r => setTimeout(r, 100));
+      showP3Tab(sub);
+    }
+    return;
+  }
+  // 기본: 데일리 리포트
+  loadDailyReport('{{ data.primary_app }}');
+})();
 </script>
 </body>
 </html>
