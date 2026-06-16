@@ -44,6 +44,9 @@ echo → 의존성 설치 중... (최초 실행 시 수 분 소요)
 call venv\Scripts\activate.bat
 pip install -r requirements.txt --quiet
 
+:: 로컬 LLM(Ollama) 설치 + 모델 다운로드 (없으면)
+call "%~dp0ensure_ollama.bat"
+
 echo.
 echo ==================================================
 echo   ✓ 설정 완료!

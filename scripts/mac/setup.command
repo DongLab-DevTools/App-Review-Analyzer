@@ -1,5 +1,7 @@
 #!/bin/bash
-cd "$(dirname "$0")/../.."
+# 스크립트 폴더를 절대경로로 먼저 고정 (cd 이후엔 $0 상대경로가 깨지므로)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR/../.."
 
 echo "=================================================="
 echo "  ReviewDong 초기 설정"
@@ -28,6 +30,9 @@ fi
 echo "→ 의존성 설치 중... (최초 실행 시 수 분 소요)"
 source venv/bin/activate
 pip install -r requirements.txt --quiet
+
+# 로컬 LLM(Ollama) 설치 + 모델 다운로드 (없으면)
+source "$SCRIPT_DIR/ensure_ollama.sh"
 
 echo ""
 echo "=================================================="
