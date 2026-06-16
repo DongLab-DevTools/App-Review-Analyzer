@@ -172,12 +172,63 @@ def save_data(app_key: str, app_config: dict, all_reviews: list, info: dict):
             json.dump(info, f, ensure_ascii=False, indent=2)
 
 
+def merge_incremental(app_key: str, fetched: list):
+    """기존 리뷰는 유지하고, reviewId 기준 신규 리뷰만 이어붙인다.
+    반환: (merged_reviews, new_count, existing_count)"""
+    path = f"data/{app_key}_reviews.json"
+    existing = []
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            existing = json.load(f).get("reviews", [])
+    seen = {r.get("reviewId") for r in existing if r.get("reviewId")}
+    new_items = [r for r in fetched if r.get("reviewId") and r.get("reviewId") not in seen]
+    # 기존 유지 + 신규 이어붙이기 (신규는 최신순으로 앞에 배치)
+    merged = new_items + existing
+    return merged, len(new_items), len(existing)
+
+
 # ── 메인 ──
+
+def collect_app(key: str, append: bool = True, on_progress=None) -> dict:
+    """단일 앱 리뷰 수집(+증분 병합). 반환: {new, exist, total, score}.
+    daily_job 등에서 재사용하기 위해 main()의 수집 로직을 함수로 분리."""
+    def log(m):
+        (on_progress or print)(m)
+
+    config = APPS[key]
+    info = fetch_gp_info(config["package_id"])
+    if info:
+        log(f"  평점: {info.get('score', 'N/A')}")
+
+    gp_raw = fetch_gp_reviews(config["package_id"], MAX_REVIEWS_GP)
+    gp_reviews = [normalize_gp_review(r) for r in gp_raw]
+
+    as_reviews = []
+    app_store_id = config.get("app_store_id")
+    if app_store_id:
+        as_raw = fetch_as_reviews(app_store_id, "", MAX_REVIEWS_AS)
+        as_reviews = [normalize_as_review(r) for r in as_raw]
+
+    all_reviews = gp_reviews + as_reviews
+    if append:
+        merged, new_cnt, exist_cnt = merge_incremental(key, all_reviews)
+        log(f"  증분: 기존 {exist_cnt}건 + 신규 {new_cnt}건 = 총 {len(merged)}건")
+        if merged:
+            save_data(key, config, merged, info)
+        return {"new": new_cnt, "exist": exist_cnt, "total": len(merged),
+                "score": (info or {}).get("score")}
+    else:
+        if all_reviews:
+            save_data(key, config, all_reviews, info)
+        return {"new": len(all_reviews), "exist": 0, "total": len(all_reviews),
+                "score": (info or {}).get("score")}
+
 
 def main():
     parser = argparse.ArgumentParser(description="앱 리뷰 수집")
     parser.add_argument("apps", nargs="*", help="수집할 앱 키 (미지정 시 전체)")
     parser.add_argument("--list", action="store_true", help="등록된 앱 목록 출력")
+    parser.add_argument("--append", action="store_true", help="기존 리뷰 유지 + 신규만 이어붙이기(증분)")
     args = parser.parse_args()
 
     if args.list:
@@ -197,34 +248,8 @@ def main():
     print("=" * 60)
 
     for key in target_keys:
-        config = APPS[key]
-        print(f"\n[{config['name']}]")
-
-        # Google Play
-        print(f"  Google Play ({config['package_id']})")
-        info = fetch_gp_info(config["package_id"])
-        if info:
-            print(f"    평점: {info.get('score', 'N/A')}, 설치수: {info.get('installs', 'N/A'):,}")
-
-        gp_raw = fetch_gp_reviews(config["package_id"], MAX_REVIEWS_GP)
-        gp_reviews = [normalize_gp_review(r) for r in gp_raw]
-
-        # App Store
-        as_reviews = []
-        app_store_id = config.get("app_store_id")
-        if app_store_id:
-            print(f"  App Store (ID: {app_store_id})")
-            as_raw = fetch_as_reviews(app_store_id, "", MAX_REVIEWS_AS)
-            as_reviews = [normalize_as_review(r) for r in as_raw]
-        else:
-            print("  App Store: ID 없음 - 건너뜀")
-
-        # 통합 저장
-        all_reviews = gp_reviews + as_reviews
-        if all_reviews:
-            save_data(key, config, all_reviews, info)
-        else:
-            print("  [WARNING] 수집된 리뷰 없음")
+        print(f"\n[{APPS[key]['name']}]")
+        collect_app(key, append=args.append)
 
     print("\n" + "=" * 60)
     print("수집 완료!")
